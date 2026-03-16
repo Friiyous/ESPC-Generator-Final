@@ -1,0 +1,12 @@
+# Ignore secrets Streamlit
+.streamlit/secrets.toml
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore documents generated
+documents_generes/
+
+# Ignore database
+*.db

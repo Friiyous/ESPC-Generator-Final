@@ -1,0 +1,180 @@
+{
+  "pv_reunion_mensuelle": {
+    "nom": "PV Réunion Mensuelle",
+    "sections": [
+      "OUVERTURE",
+      "LECTURE PV PRÉCÉDENT",
+      "ORDRE DU JOUR",
+      "DÉLIBÉRATIONS",
+      "DÉCISIONS",
+      "CLÔTURE"
+    ],
+    "sans_signature": true
+  },
+  "pv_coges": {
+    "nom": "PV Réunion COGES",
+    "sections": [
+      "OUVERTURE",
+      "LECTURE PV PRÉCÉDENT",
+      "ORDRE DU JOUR",
+      "DÉLIBÉRATIONS",
+      "DÉCISIONS",
+      "CLÔTURE"
+    ],
+    "sans_signature": true
+  },
+  "pv_ag": {
+    "nom": "PV Assemblée Générale",
+    "sections": [
+      "OUVERTURE",
+      "ÉLECTION BUREAU",
+      "LECTURE PV PRÉCÉDENT",
+      "ADOPTION OJ",
+      "DISCUSSIONS",
+      "DÉCISIONS/VOTES",
+      "CLÔTURE"
+    ],
+    "sans_signature": true
+  },
+  "rapport_supervision_asc": {
+    "nom": "Rapport Supervision ASC",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "PLAN SUPERVISION ANNUEL",
+      "EFFECTIFS SUPERVISÉS",
+      "LISTE ASC",
+      "GRILLE SUPERVISION",
+      "ACTIVITÉS",
+      "RÉSULTATS",
+      "DISPO MÉDICAMENTS",
+      "DIFFICULTÉS",
+      "RECOMMANDATIONS",
+      "TRANSMISSION DISTRICT"
+    ],
+    "sans_signature": true
+  },
+  "rapport_plaintes": {
+    "nom": "Rapport Boîte à Suggestions",
+    "sections": [
+      "CONTEXTE",
+      "STATISTIQUES",
+      "TYPES SUGGESTIONS",
+      "ACTIONS MENÉES",
+      "RÉSULTATS",
+      "RECOMMANDATIONS"
+    ],
+    "sans_signature": true
+  },
+  "rapport_formation": {
+    "nom": "Rapport Formation",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "OBJECTIFS",
+      "DOMAINE",
+      "CONTENU",
+      "PARTICIPANTS",
+      "ÉVALUATION",
+      "DIFFICULTÉS",
+      "RECOMMANDATIONS"
+    ],
+    "sans_signature": true
+  },
+  "fiche_poste": {
+    "nom": "Fiche de Poste",
+    "sections": [
+      "IDENTIFICATION",
+      "MISSIONS",
+      "QUALIFICATIONS",
+      "RESPONSABILITÉS"
+    ],
+    "sans_signature": true
+  },
+  "fiche_nomination": {
+    "nom": "Fiche de Nomination",
+    "sections": [
+      "VU",
+      "DÉSIGNE",
+      "MISSION",
+      "DATEEFFET"
+    ],
+    "sans_signature": true
+  },
+  "calendrier_nettoyage": {
+    "nom": "Calendrier Nettoyage",
+    "sections": [
+      "PRÉSENTATION",
+      "ZONES",
+      "FRÉQUENCE",
+      "RESPONSABLES",
+      "CALENDRIER",
+      "AFFICHAGE"
+    ],
+    "sans_signature": true
+  },
+  "calendrier_reunions_mensuelles": {
+    "nom": "Calendrier Réunions Mensuelles",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "CALENDRIER",
+      "OBSERVATIONS",
+      "AFFICHAGE"
+    ],
+    "sans_signature": true
+  },
+  "grille_supervision_asc": {
+    "nom": "Grille Supervision ASC",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "CRITÈRES",
+      "ÉVALUATION",
+      "OBSERVATIONS"
+    ],
+    "sans_signature": true
+  },
+  "liste_coges": {
+    "nom": "Liste Personnel COGES",
+    "sections": [
+      "EN-TÊTE",
+      "TABLEAU MEMBRES",
+      "RÉCAPITULATIF",
+      "CONTACTS",
+      "OBSERVATIONS",
+      "APPROBATION"
+    ],
+    "sans_signature": true
+  },
+  "plan_action_infections_nosocomiales": {
+    "nom": "Plan Action Infections Nosocomiales",
+    "sections": [
+      "CONTEXTE",
+      "OBJECTIFS",
+      "ACTIVITÉS",
+      "CALENDRIER",
+      "RESPONSABLES",
+      "SUIVI"
+    ],
+    "sans_signature": true
+  },
+  "plan_supervision_asc": {
+    "nom": "Plan Supervision ASC",
+    "sections": [
+      "CONTEXTE",
+      "OBJECTIFS",
+      "ACTIVITÉS",
+      "LOCALITÉS",
+      "CALENDRIER",
+      "RESPONSABLES"
+    ],
+    "sans_signature": true
+  },
+  "programme_reunions_trimestrielles": {
+    "nom": "Programme Réunions Trimestrielles",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "CALENDRIER T1-T4",
+      "OBSERVATIONS",
+      "AFFICHAGE"
+    ],
+    "sans_signature": true
+  }
+}

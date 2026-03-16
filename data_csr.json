@@ -1,0 +1,168 @@
+{
+  "etablissement": {
+    "nom": "CSR NAGNENEFOUN",
+    "type": "Centre de Santé Rural",
+    "region": "PORO",
+    "district": "KORHOGO 1",
+    "date_creation": "01/01/2015",
+    "date_ouverture": "23/06/2016",
+    "distance_district": "9 Km",
+    "distance_hopital_reference": "19 Km"
+  },
+  "population": {
+    "totale": 34055,
+    "fap": 1261,
+    "moins_5_ans": 5148,
+    "0_11_mois": 1028,
+    "grossesses_attendues": 1206,
+    "naissances_vivantes": 1049
+  },
+  "ressources_humaines": {
+    "IDE": 6,
+    "SFDE": 6,
+    "aides_soignants": 4,
+    "agents_hygiene": 3,
+    "filles_salle": 8,
+    "asc": 3,
+    "ambulancier": 1,
+    "gardien": 1,
+    "agent_cmu": 1
+  },
+  "infrastructures": {
+    "dispensaire": ["Salle de consultation", "Salle de mise en observation", "Salle de soins", "Hall d'attente"],
+    "maternite": ["Salle de consultation prénatale", "Salle d'accouchement", "Salle de suites de couches", "Toilette fonctionnelle"],
+    "autres": ["Château d'eau", "Toilettes visiteurs (à réhabiliter)"]
+  },
+  "activites_principales": [
+    "Consultations curatives",
+    "CPN (Consultation Prénatale)",
+    "Accouchements",
+    "Vaccination (PEV)",
+    "Paludisme (PNLP)",
+    "VIH/PTME",
+    "Surveillance épidémiologique",
+    "Activités communautaires",
+    "Nutrition",
+    "IEC/CCC (Information, Éducation, Communication)"
+  ],
+  "statistiques_cles": {
+    "taux_frequentation": "11,1%",
+    "taux_utilisation": "9,3%",
+    "cpn1": "81%",
+    "cpn4": "61,1%",
+    "accouchements_assistes": "31,37%",
+    "cpn_abandon": "24,4%",
+    "sp_abandon": "50,94%",
+    "zéro_deces_maternel": true
+  },
+  "maladies_principales": [
+    {"nom": "Paludisme", "pourcentage": "76%", "rang": 1},
+    {"nom": "IRA", "pourcentage": "19%", "rang": 2},
+    {"nom": "Diarrhées", "pourcentage": "5%", "rang": 3}
+  ],
+  "vaccination": {
+    "bcg": "97%",
+    "penta1": "94%",
+    "penta3": "91%",
+    "rr1": "92%",
+    "td2_plus": "95%",
+    "taux_abandon": "3,4%"
+  },
+  "activites_communautaires": {
+    "asc": 3,
+    "localites_asc": 3,
+    "personnes_sensibilisees": 1500,
+    "enfants_testes": 450,
+    "enfants_traites": 380
+  },
+  "themes_generation": {
+    "sante_maternelle": [
+      "Consultation prénatale (CPN)",
+      "Accouchements assistés",
+      "Suivi post-natal (CPoN)",
+      "Planification familiale",
+      "PTME (Prévention Transmission Mère-Enfant)"
+    ],
+    "sante_infantile": [
+      "PEV (Programme Élargi de Vaccination)",
+      "Surveillance de la croissance",
+      "Dépistage malnutrition",
+      "Prise en charge des maladies infantiles"
+    ],
+    "paludisme": [
+      "Dépistage (TDR)",
+      "Traitement (CTA)",
+      "Prévention (MILDA, SP)",
+      "IEC/CCC"
+    ],
+    "hygiene": [
+      "Entretien des locaux",
+      "Gestion des déchets",
+      "Lavage des mains",
+      "Contrôle des infections"
+    ],
+    "gouvernance": [
+      "Réunion mensuelle",
+      "Réunion COGES",
+      "Assemblée Générale",
+      "Supervision ASC",
+      "Formation personnel"
+    ],
+    "surveillance_epidemiologique": [
+      "Notification des maladies",
+      "Rougeole",
+      "COVID-19",
+      "Fièvre jaune",
+      "PFA"
+    ],
+    "pharmacie": [
+      "Gestion des stocks",
+      "Commande de médicaments",
+      "Recouvrement",
+      "PEV"
+    ],
+    "nutrition": [
+      "Dépistage malnutrition",
+      "MAS (Malnutrition Aigüe Sévère)",
+      "MAM (Malnutrition Aigüe Modérée)",
+      "Counseling nutritionnel"
+    ],
+    "iecc": [
+      "Sensibilisation communautaire",
+      "IEC/CCC",
+      "Affiches et brochures",
+      "Radiodiffusion"
+    ],
+    "activites_communautaires": [
+      "ASC (Agents de Santé Communautaire)",
+      "Dépistage communautaire",
+      "Référence vers le CSR",
+      "Suivi à domicile"
+    ],
+    "equipements": [
+      "Maintenance",
+      "Inventaire",
+      "Équipements biomédicaux",
+      "Matériel de froid"
+    ],
+    "rapports": [
+      "SIG",
+      "PEV",
+      "Pharmacie",
+      "Communautaire"
+    ]
+  },
+  "points_cibles_2026": {
+    "cpn4": "70%",
+    "accouchements": "50%",
+    "penta3": "95%",
+    "cpn1": "85%"
+  },
+  "difficultes_recurrentes": [
+    "Faible taux CPN4",
+    "Abandon élevé en surveillance.postnatale",
+    "Faible distribution MILDA",
+    "Absence de moto pour stratégies avancées",
+    "Toilettes visiteurs non fonctionnelles"
+  ]
+}
