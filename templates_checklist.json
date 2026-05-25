@@ -1,0 +1,139 @@
+{
+  "checklist_preparation_evaluation": {
+    "nom": "Checklist Préparation Évaluation ESPC",
+    "sections": [
+      "DOCUMENTS ADMINISTRATIFS",
+      "DONNÉES STATISTIQUES",
+      "INFRASTRUCTURES ET ÉQUIPEMENTS",
+      "PERSONNEL",
+      "ACTIVITÉS COMMUNAUTAIRES",
+      "SANTÉ MATERNELLE",
+      "SANTÉ INFANTILE",
+      "HYGIÈNE ET INFECTIONS",
+      "PHARMACIE",
+      "SUIVI ET RAPPORTS"
+    ],
+    "items": {
+      "DOCUMENTS ADMINISTRATIFS": [
+        "Organigramme à jour",
+        "Règlement intérieur",
+        "Fiches de poste actualisées",
+        "Planning de travail annuel",
+        "PV des réunions COGES",
+        "PV des réunions mensuelles",
+        "Procès-verbaux d'assemblées générales",
+        "Actes de nominations",
+        "Contrats de travail",
+        "Fiches de sortie du personnel"
+      ],
+      "DONNÉES STATISTIQUES": [
+        "Registres de consultations",
+        "Registres de maternité",
+        "Registres de vaccination",
+        "Registre de laboratoire",
+        "Registre de pharmacie",
+        "Registre des décès",
+        "Registre des naissances",
+        "Registre des maladies",
+        "Tableaux de bord",
+        "Rapports mensuels"
+      ],
+      "INFRASTRUCTURES ET ÉQUIPEMENTS": [
+        "Vérification des locaux",
+        "Maintenance des équipements",
+        "Stock de consommables",
+        "Disponibilité des médicaments",
+        "Équipements de protection",
+        "Signalétique",
+        "Hygiène des locaux",
+        "Gestion des déchets",
+        "Eau et électricité",
+        "Sécurité des installations"
+      ],
+      "PERSONNEL": [
+        "Effectif complet",
+        "Présence à poste",
+        "Formation à jour",
+        "Équipement de travail",
+        "Tenue professionnelle",
+        "Comportement professionnel",
+        "Respect des horaires",
+        "Participation aux réunions",
+        "Évaluation du personnel",
+        "Plan de formation"
+      ],
+      "ACTIVITÉS COMMUNAUTAIRES": [
+        "Liste des ASC",
+        "Plan de supervision ASC",
+        "Rapports de supervision",
+        "Activités de sensibilisation",
+        "Cartographie des villages",
+        "Planning des visites",
+        "Matériel de communication",
+        "Kits de dépistage",
+        "Références aux structures",
+        "Suivi des cas"
+      ],
+      "SANTÉ MATERNELLE": [
+        "CPN à jour",
+        "Suivi grossesses",
+        "Accouchements assistés",
+        "Postnatal",
+        "Planification familiale",
+        "PTME",
+        "Équipement de maternité",
+        "Stérilisation",
+        "Gestion du sang",
+        "Transfusion"
+      ],
+      "SANTÉ INFANTILE": [
+        "PEV à jour",
+        "Suivi croissance",
+        "Dépistage malnutrition",
+        "Prise en charge pathologies",
+        "Vaccination",
+        "Paludisme",
+        "Nutrition",
+        "IEC/CCC",
+        "Suivi vaccination",
+        "Statistiques vaccination"
+      ],
+      "HYGIÈNE ET INFECTIONS": [
+        "Lavage des mains",
+        "Désinfection",
+        "Gestion déchets",
+        "Contrôle infections",
+        "Stérilisation",
+        "Hygiène alimentaire",
+        "Eau potable",
+        "Assainissement",
+        "Surveillance infections",
+        "Plan prévention"
+      ],
+      "PHARMACIE": [
+        "Stock de base",
+        "Gestion des stocks",
+        "Commandes",
+        "Destruction médicaments",
+        "Température conservation",
+        "Documentation",
+        "Recouvrement",
+        "Gestion des déchets",
+        "Contrôle qualité",
+        "Formation personnel"
+      ],
+      "SUIVI ET RAPPORTS": [
+        "Tableaux de bord",
+        "Rapports mensuels",
+        "Rapports trimestriels",
+        "Évaluations",
+        "Plans d'action",
+        "Suivi indicateurs",
+        "Analyse des données",
+        "Recommandations",
+        "Plan d'amélioration",
+        "Communication des résultats"
+      ]
+    }
+  }
+}

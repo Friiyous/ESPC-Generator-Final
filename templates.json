@@ -1,12 +1,61 @@
 {
+  "BILAN": {
+    "nom": "Bilan d'Activité",
+    "sections": [
+      "INFOS GÉNÉRALES",
+      "ACTIVITÉS RÉALISÉES",
+      "RÉSULTATS OBTENUS",
+      "DIFFICULTÉS RENCONTRÉES",
+      "LEÇONS APPRISES",
+      "RECOMMANDATIONS"
+    ],
+    "sans_signature": false
+  },
+  "PLAN": {
+    "nom": "Plan d'Action",
+    "sections": [
+      "CONTEXTE",
+      "OBJECTIFS",
+      "ACTIVITÉS PRÉVUES",
+      "CALENDRIER",
+      "RESSOURCES NÉCESSAIRES",
+      "INDICATEURS DE SUCCÈS"
+    ],
+    "sans_signature": false
+  },
+  "RAPPORT": {
+    "nom": "Rapport d'Activité",
+    "sections": [
+      "PRÉSENTATION",
+      "MÉTHODOLOGIE",
+      "RÉSULTATS",
+      "ANALYSE",
+      "CONCLUSIONS",
+      "RECOMMANDATIONS"
+    ],
+    "sans_signature": false
+  },
+  "EVALUATION": {
+    "nom": "Évaluation de Performance",
+    "sections": [
+      "CRITÈRES D'ÉVALUATION",
+      "MÉTHODOLOGIE",
+      "RÉSULTATS DÉTAILLÉS",
+      "POINTS FORTS",
+      "POINTS À AMÉLIORER",
+      "PLAN D'ACTION"
+    ],
+    "sans_signature": false
+  },
   "pv_reunion_mensuelle": {
     "nom": "PV Réunion Mensuelle",
     "sections": [
       "OUVERTURE",
-      "LECTURE PV PRÉCÉDENT",
+      "MOT D'OUVERTURE",
+      "LECTURE ET ADOPTION DU PV PRÉCÉDENT",
       "ORDRE DU JOUR",
-      "DÉLIBÉRATIONS",
-      "DÉCISIONS",
+      "DÉLIBÉRATIONS (TABLEAU)",
+      "DIVERS",
       "CLÔTURE"
     ],
     "sans_signature": true
@@ -15,10 +64,12 @@
     "nom": "PV Réunion COGES",
     "sections": [
       "OUVERTURE",
-      "LECTURE PV PRÉCÉDENT",
+      "MOT D'OUVERTURE",
+      "LECTURE ET ADOPTION DU PV PRÉCÉDENT",
       "ORDRE DU JOUR",
-      "DÉLIBÉRATIONS",
-      "DÉCISIONS",
+      "DÉLIBÉRATIONS (TABLEAU)",
+      "DÉCISIONS ADOPTÉES",
+      "QUESTIONS DIVERSES",
       "CLÔTURE"
     ],
     "sans_signature": true
@@ -27,11 +78,12 @@
     "nom": "PV Assemblée Générale",
     "sections": [
       "OUVERTURE",
-      "ÉLECTION BUREAU",
-      "LECTURE PV PRÉCÉDENT",
-      "ADOPTION OJ",
-      "DISCUSSIONS",
-      "DÉCISIONS/VOTES",
+      "MOT D'OUVERTURE",
+      "ÉLECTION DU BUREAU DE SÉANCE",
+      "LECTURE ET ADOPTION DU PV PRÉCÉDENT",
+      "ADOPTION DE L'ORDRE DU JOUR",
+      "DÉLIBÉRATIONS ET DÉCISIONS (TABLEAU)",
+      "RECOMMANDATIONS ADOPTÉES",
       "CLÔTURE"
     ],
     "sans_signature": true
@@ -68,14 +120,13 @@
   "rapport_formation": {
     "nom": "Rapport Formation",
     "sections": [
-      "INFOS GÉNÉRALES",
-      "OBJECTIFS",
-      "DOMAINE",
-      "CONTENU",
-      "PARTICIPANTS",
-      "ÉVALUATION",
-      "DIFFICULTÉS",
-      "RECOMMANDATIONS"
+      "INFORMATIONS GÉNÉRALES",
+      "OBJECTIFS DE LA FORMATION",
+      "RÉCAPITULATIF DES SESSIONS (TABLEAU)",
+      "ÉVALUATION DE LA FORMATION",
+      "DIFFICULTÉS RENCONTRÉES",
+      "RECOMMANDATIONS",
+      "SUIVI"
     ],
     "sans_signature": true
   },
@@ -100,13 +151,13 @@
     "sans_signature": true
   },
   "calendrier_nettoyage": {
-    "nom": "Calendrier Nettoyage",
+    "nom": "Calendrier Nettoyage Centre",
     "sections": [
       "PRÉSENTATION",
-      "ZONES",
-      "FRÉQUENCE",
-      "RESPONSABLES",
-      "CALENDRIER",
+      "ZONES À NETTOYER",
+      "CALENDRIER DE NETTOYAGE (TABLEAU)",
+      "PLAN DE NETTOYAGE QUOTIDIEN DU SOIR (FILLES DE SALLE)",
+      "OBSERVATIONS",
       "AFFICHAGE"
     ],
     "sans_signature": true
@@ -124,34 +175,34 @@
   "grille_supervision_asc": {
     "nom": "Grille Supervision ASC",
     "sections": [
-      "INFOS GÉNÉRALES",
-      "CRITÈRES",
-      "ÉVALUATION",
-      "OBSERVATIONS"
+      "INFORMATIONS GÉNÉRALES",
+      "CRITÈRES DE SUPERVISION (TABLEAU)",
+      "ÉVALUATION GLOBALE",
+      "OBSERVATIONS ET RECOMMANDATIONS",
+      "SIGNATURES"
     ],
-    "sans_signature": true
+    "sans_signature": false
   },
   "liste_coges": {
     "nom": "Liste Personnel COGES",
     "sections": [
-      "EN-TÊTE",
-      "TABLEAU MEMBRES",
+      "EN-TÊTE OFFICIEL",
+      "LISTE DU PERSONNEL COGES (TABLEAU)",
       "RÉCAPITULATIF",
-      "CONTACTS",
+      "CONTACTS UTILES",
       "OBSERVATIONS",
       "APPROBATION"
     ],
-    "sans_signature": true
+    "sans_signature": false
   },
   "plan_action_infections_nosocomiales": {
     "nom": "Plan Action Infections Nosocomiales",
     "sections": [
-      "CONTEXTE",
+      "CONTEXTE ET JUSTIFICATION",
       "OBJECTIFS",
-      "ACTIVITÉS",
-      "CALENDRIER",
-      "RESPONSABLES",
-      "SUIVI"
+      "PLAN D'ACTION DÉTAILLÉ (TABLEAU)",
+      "SUIVI ET ÉVALUATION",
+      "AFFICHAGE"
     ],
     "sans_signature": true
   },
@@ -159,11 +210,12 @@
     "nom": "Plan Supervision ASC",
     "sections": [
       "CONTEXTE",
-      "OBJECTIFS",
-      "ACTIVITÉS",
-      "LOCALITÉS",
-      "CALENDRIER",
-      "RESPONSABLES"
+      "OBJECTIFS DE LA SUPERVISION",
+      "PLAN DE SUPERVISION ANNUEL (TABLEAU)",
+      "LOCALITÉS ET AIRES SANITAIRES",
+      "GRILLE D'ÉVALUATION ASC",
+      "RESPONSABILITÉS",
+      "AFFICHAGE"
     ],
     "sans_signature": true
   },
@@ -171,10 +223,33 @@
     "nom": "Programme Réunions Trimestrielles",
     "sections": [
       "INFOS GÉNÉRALES",
-      "CALENDRIER T1-T4",
-      "OBSERVATIONS",
-      "AFFICHAGE"
+      "CALENDRIER STRATÉGIQUE T1-T4",
+      "OBJECTIFS STRATÉGIQUES",
+      "MODALITÉS D'AFFICHAGE"
     ],
     "sans_signature": true
+  },
+  "liste_personnel_centre": {
+    "nom": "Liste Personnel Centre",
+    "sections": [
+      "EN-TÊTE OFFICIEL",
+      "LISTE DU PERSONNEL (TABLEAU)",
+      "RÉCAPITULATIF",
+      "OBSERVATIONS",
+      "APPROBATION"
+    ],
+    "sans_signature": false
+  },
+  "note_service": {
+    "nom": "Note de Service",
+    "sections": [
+      "RÉFÉRENCES ET OBJET",
+      "CONSIDÉRANTS / PRÉAMBULE",
+      "MESURES À PRENDRE",
+      "PUBLIC CIBLE",
+      "APPLICATION",
+      "DIFFUSION"
+    ],
+    "sans_signature": false
   }
 }

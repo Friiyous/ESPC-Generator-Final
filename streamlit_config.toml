@@ -1,0 +1,21 @@
+[server]
+# Augmenter la limite de mémoire pour Streamlit
+server.maxMessageSize = 1000
+server.fileWatcherType = "none"
+server.headless = true
+server.port = 8503
+server.address = "0.0.0.0"
+
+[browser]
+# Désactiver le redémarrage automatique en développement
+serverAddress = "localhost"
+serverPort = 8503
+gatherUsageStats = false
+
+[logger]
+# Désactiver les logs pour réduire la charge
+level = "error"
+
+[runner]
+# Optimiser l'exécution
+fastRerun = true

@@ -1,12 +1,30 @@
-# Ignore secrets Streamlit
-.streamlit/secrets.toml
-
-# Ignore Python cache
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+.env
 
-# Ignore documents generated
-documents_generes/
+# Streamlit
+.streamlit/
 
-# Ignore database
+# Docx générés
+planning_*.docx
+documents_generes/*.docx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Blackbox
+.blackbox/
+
+# Database
 *.db
+
+# Vidéos
+videos/
+integrations_config.py
