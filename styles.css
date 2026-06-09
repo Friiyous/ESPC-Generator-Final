@@ -1,0 +1,307 @@
+/* =============================================================================
+   STYLES CSS POUR AMÉLIORER L'AFFICHAGE MOBILE
+   ============================================================================= */
+
+/* Configuration générale pour mobile */
+@media (max-width: 768px) {
+    /* Réduire les marges générales */
+    .element-container {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Améliorer la lisibilité des titres */
+    h1 {
+        font-size: 1.5rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    h2 {
+        font-size: 1.3rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    h3 {
+        font-size: 1.1rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* Optimiser les boutons pour le tactile */
+    .stButton > button {
+        width: 100% !important;
+        height: 50px !important;
+        font-size: 16px !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Améliorer les zones de texte */
+    .stTextArea > div > div > textarea {
+        font-size: 16px !important;
+        min-height: 120px !important;
+    }
+    
+    .stTextInput > div > div > input {
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+    
+    /* Optimiser les selects pour mobile */
+    .stSelectbox > div > div > select {
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+    
+    /* Améliorer les métriques */
+    [data-testid="stMetricValue"] {
+        font-size: 1.8rem !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 0.9rem !important;
+    }
+    
+    /* Réduire l'espacement du sidebar */
+    [data-testid="stSidebar"] {
+        width: 100% !important;
+    }
+    
+    /* Améliorer les colonnes */
+    [data-testid="column"] {
+        padding: 0.5rem !important;
+    }
+    
+    /* Optimiser les tabs pour mobile */
+    .stTabs button {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+    }
+    
+    /* Améliorer les cards/containers */
+    .streamlit-expanderHeader {
+        font-size: 14px !important;
+        padding: 10px !important;
+    }
+    
+    /* Réduire les alertes */
+    .stAlert {
+        padding: 0.75rem !important;
+        font-size: 14px !important;
+    }
+    
+    /* Améliorer les progress bars */
+    .stProgress > div > div {
+        height: 8px !important;
+    }
+    
+    /* Optimiser les fichiers download */
+    .stDownloadButton > button {
+        width: 100% !important;
+        height: 50px !important;
+    }
+    
+    /* Améliorer les spinners */
+    .stSpinner > div {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    /* Réduire les espaces blancs */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Améliorer la navigation */
+    .stTabs {
+        gap: 0.25rem !important;
+    }
+    
+    /* Optimiser les formulaires */
+    [data-testid="stForm"] {
+        padding: 0.5rem !important;
+    }
+    
+    /* Améliorer les datatables pour mobile */
+    .dataframe {
+        font-size: 12px !important;
+    }
+    
+    .dataframe th {
+        font-size: 11px !important;
+        padding: 4px !important;
+    }
+    
+    .dataframe td {
+        padding: 4px !important;
+    }
+    
+    /* Scroll horizontal pour les tableaux */
+    .dataframe-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Améliorer les images */
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Optimiser les liens */
+    a {
+        font-size: 14px !important;
+        padding: 8px !important;
+    }
+    
+    /* Améliorer les info boxes */
+    .info-box {
+        padding: 10px !important;
+        margin: 5px 0 !important;
+    }
+    
+    /* Réduire les分隔线 */
+    hr {
+        margin: 10px 0 !important;
+    }
+}
+
+/* Améliorations générales pour tous les écrans */
+@media (min-width: 769px) and (max-width: 1200px) {
+    /* Tablettes */
+    h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .block-container {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Optimisations pour les très petits écrans */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    h2 {
+        font-size: 1.2rem !important;
+    }
+    
+    h3 {
+        font-size: 1rem !important;
+    }
+    
+    .block-container {
+        padding: 0.75rem !important;
+    }
+    
+    /* Réduire davantage les boutons */
+    .stButton > button {
+        height: 45px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Améliorations pour la sidebar sur desktop */
+@media (min-width: 769px) {
+    [data-testid="stSidebarCollapsedControl"] {
+        padding: 1rem !important;
+    }
+}
+
+/* Styles pour les messages de chat */
+.stChatMessage {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Amélioration des tooltips */
+.stTooltipIcon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Optimisation pour le scroll smooth */
+html {
+    scroll-behavior: smooth !important;
+}
+
+/* Amélioration de l'UX pour mobile */
+* {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Désactiver le zoom sur double-tap pour les boutons */
+button {
+    touch-action: manipulation !important;
+}
+
+/* Améliorer la lisibilité du code */
+code {
+    font-size: 13px !important;
+    padding: 2px 6px !important;
+}
+
+/* Optimiser les graphiques pour mobile */
+[data-testid="stVegaLiteChart"] {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* =============================================================================
+   RESPONSIVE NAVIGATION & SIDEBAR
+   ============================================================================= */
+section[data-testid="stSidebar"] {
+    min-width: 200px !important;
+}
+
+@media (max-width: 768px) {
+    section[data-testid="stSidebar"] {
+        min-width: 100% !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        padding: 8px !important;
+    }
+    section[data-testid="stSidebar"] .stButton button {
+        font-size: 0.8rem !important;
+        padding: 6px 10px !important;
+    }
+    section[data-testid="stSidebar"] h3 {
+        font-size: 0.9rem !important;
+    }
+    div[data-testid="column"] {
+        min-width: 100% !important;
+        margin-bottom: 10px;
+    }
+    .stButton button {
+        font-size: 0.85rem !important;
+        padding: 8px 12px !important;
+    }
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+    table {
+        font-size: 10px !important;
+        max-width: 100% !important;
+    }
+    td, th {
+        padding: 3px 4px !important;
+    }
+    .streamlit-expanderHeader {
+        font-size: 0.85rem !important;
+        padding: 8px 12px !important;
+    }
+    .stDownloadButton button {
+        font-size: 0.8rem !important;
+        padding: 6px 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .st-emotion-cache-1y4p8pa { padding: 0.5rem 0.3rem !important; }
+    div[data-testid="stSidebarNav"] { display: none !important; }
+}

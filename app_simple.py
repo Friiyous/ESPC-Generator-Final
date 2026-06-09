@@ -2,6 +2,7 @@
 Application Streamlit - Générateur Documents ESPC
 Conforme à la grille ESPC
 """
+
 import streamlit as st
 import os
 import json
@@ -20,10 +21,47 @@ from docx.oxml.ns import qn
 # =============================================================================
 
 st.set_page_config(
-    page_title="Générateur Documents ESPC",
-    page_icon="🏥",
-    layout="centered"
+    page_title="Générateur Documents ESPC", page_icon="🏥", layout="centered"
 )
+
+st.markdown(
+    """
+<style>
+@media (max-width: 768px) {
+    section[data-testid="stSidebar"] {
+        width: 280px !important;
+        min-width: 280px !important;
+    }
+    section[data-testid="stSidebar"] .stRadio > div {
+        gap: 0.3rem !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label {
+        font-size: 0.9rem !important;
+        padding: 6px 8px !important;
+    }
+    .block-container {
+        padding-top: 1rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    h1 { font-size: 1.5rem !important; }
+    h2 { font-size: 1.2rem !important; }
+    .stButton > button {
+        width: 100% !important;
+    }
+}
+@media (max-width: 480px) {
+    h1 { font-size: 1.3rem !important; }
+    section[data-testid="stSidebar"] {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 
 # Configuration de la clé API Groq
 import os
@@ -36,7 +74,7 @@ else:
     _BASE_DIR = os.getcwd()
 
 # Charger les variables d'environnement depuis .env (fallback local)
-_env_path = os.path.join(_BASE_DIR, '.env')
+_env_path = os.path.join(_BASE_DIR, ".env")
 load_dotenv(_env_path)
 
 # Configuration de la clé API Groq via st.secrets (Streamlit Cloud) ou .env (local)
@@ -53,11 +91,15 @@ if not GROQ_API_KEY:
     2. Redémarre l'application
     """)
 else:
-    _ = Groq(api_key=GROQ_API_KEY)  # Validation de la clé
+    try:
+        _ = Groq(api_key=GROQ_API_KEY)
+    except TypeError:
+        pass
 
 # =============================================================================
 # CONTEXTE DU CSR NAGNENEFOUN
 # =============================================================================
+
 
 def get_contexte_csr():
     """Génère le contexte du CSR NAGNENEFOUN"""
@@ -70,9 +112,11 @@ CONTEXTE DU CSR NAGNENEFOUN (PORO, District KORHOGO 1):
 """
     return contexte
 
+
 # =============================================================================
 # CHARGEMENT DES TEMPLATES
 # =============================================================================
+
 
 @st.cache_data
 def charger_templates():
@@ -83,12 +127,15 @@ def charger_templates():
     except FileNotFoundError:
         return None
 
+
 def sauvegarder_templates(templates):
     """Sauvegarde les templates dans le fichier JSON"""
     with open("templates.json", "w", encoding="utf-8") as f:
         json.dump(templates, f, ensure_ascii=False, indent=2)
 
+
 templates = charger_templates()
+
 
 def get_sections_template(doc_key):
     """Retourne les sections d'un template"""
@@ -96,12 +143,12 @@ def get_sections_template(doc_key):
         return templates[doc_key]["sections"]
     return []
 
+
 # =============================================================================
 # PROMPTS STRICTS - CONFORMES À LA GRILLE ESPC
 # =============================================================================
 
 PROMPTS = {
-
     "pv_reunion_mensuelle": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu rédiges un PROCÈS-VERBAL DE RÉUNION MENSUELLE conforme à la grille ESPC.
 
@@ -116,7 +163,6 @@ RÈGLES TRÈS IMPORTANTES:
 2. Génère un contenu COMPLET sans placeholders ni [À compléter]
 3. N'inclus JAMAIS de section "LISTE DE PRÉSENCE" ou "SIGNATURES" - ces parties sont saisies manuellement
 4. Le PV doit contenir un TABLEAU DES DÉLIBÉRATIONS avec 4 colonnes: N° | Point discuté | Décisions prises | Responsable/Délai""",
-
         "user": """Génère PV RÉUNION MENSUELLE pour {nom_etablissement} - {periode}.
 
 CONTEXTE DU CENTRE:
@@ -167,9 +213,8 @@ Pour chaque thème de l'ordre du jour, génère un point avec décision et respo
 - Prochaine réunion: __/__/20..
 - Le Chef de Centre remercie les participants et lève la séance
 
-Génère le PV complet avec des décisions spécifiques et contextualisées pour {mois} {periode} en lien avec le thème: {themes}."""
+Génère le PV complet avec des décisions spécifiques et contextualisées pour {mois} {periode} en lien avec le thème: {themes}.""",
     },
-
     "pv_coges": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu rédiges un PROCÈS-VERBAL DE RÉUNION DU COMITÉ DE GESTION (COGES) conforme à la grille ESPC - Norme 1.02.
 
@@ -184,7 +229,6 @@ RÈGLES TRÈS IMPORTANTES:
 2. Utilise les données réelles du CSR (personnel, statistiques, activités)
 3. N'inclus JAMAIS de section "LISTE DE PRÉSENCE" ou "SIGNATURES" - ces parties sont saisies manuellement
 4. Inclus un TABLEAU DES DÉLIBÉRATIONS avec 4 colonnes: N° | Point discuté | Décisions prises | Responsable/Délai""",
-
         "user": """Génère un PROCÈS-VERBAL DE RÉUNION DU COMITÉ DE GESTION (COGES) pour {nom_etablissement} - {periode}.
 
 CONTEXTE DU CENTRE:
@@ -245,9 +289,8 @@ Points typiques COGES:
 - Prochaine réunion: __/__/20..
 - Le Président remercie les participants et lève la séance
 
-Génère le PV complet adapté au CSR {nom_etablissement} pour le {trimestre} {periode} en lien avec les thèmes COGES."""
+Génère le PV complet adapté au CSR {nom_etablissement} pour le {trimestre} {periode} en lien avec les thèmes COGES.""",
     },
-
     "pv_ag": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu rédiges un PROCÈS-VERBAL D'ASSEMBLÉE GÉNÉRALE conforme à la grille ESPC - Norme 1.03.
 
@@ -261,7 +304,6 @@ RÈGLES:
 1. Utilise les données réelles du CSR
 2. N'inclus JAMAIS de section "LISTE DE PRÉSENCE" ou "SIGNATURES" - ces parties sont saisies manuellement
 3. Inclus un TABLEAU DES POINTS ABORDÉS avec 4 colonnes: N° | Point discuté | Décisions/Votes | Observations""",
-
         "user": """Génère un PROCÈS-VERBAL D'ASSEMBLÉE GÉNÉRALE pour {nom_etablissement} - {periode}.
 
 CONTEXTE DU CENTRE:
@@ -321,16 +363,14 @@ Points typiques AG annuelle:
 - Prochaine Assemblée Générale: Année [N+1]
 - Le Président remercie les participants et lève la séance
 
-Génère le PV complet adapté au CSR {nom_etablissement} pour l'année {periode}."""
+Génère le PV complet adapté au CSR {nom_etablissement} pour l'année {periode}.""",
     },
-
     "rapport_supervision_asc": {
         "system": """Tu es un assistant spécialisé dans les rapports de supervision ASC pour les CSR en Côte d'Ivoire.
 
 RÈGLES:
 1. Utilise les données réelles du CSR (3 ASC, villages, activités communautaires)
 2. N'inclus JAMAIS de "SIGNATURES" ou "LISTE PRÉSENCE" - ces parties sont saisies manuellement""",
-
         "user": """Génère RAPPORT SUPERVISION ASC pour {nom_etablissement}.
 {contexte}
 
@@ -347,13 +387,11 @@ IX. DIFFICULTÉS
 X. RECOMMANDATIONS
 XI. TRANSMISSION DISTRICT
 
-Génère un rapport contextualisé."""
+Génère un rapport contextualisé.""",
     },
-
     "rapport_plaintes": {
         "system": """Tu es un assistant spécialisé dans les rapports de boîte à suggestions pour CSR en Côte d'Ivoire.
 RÈGLES: Génère un contenu COMPLET contextualisé, sans SIGNATURES.""",
-
         "user": """Génère RAPPORT BOÎTE À SUGGESTIONS pour {nom_etablissement}.
 {contexte}
 
@@ -371,9 +409,8 @@ IV. ACTIONS MENÉES
 V. RÉSULTATS
 VI. RECOMMANDATIONS
 
-Génère un rapport contextualisé."""
+Génère un rapport contextualisé.""",
     },
-
     # =============================================================================
     # FICHE DE POSTE - Templates par catégorie - Conforme Grille ESPC 2.01
     # =============================================================================
@@ -462,10 +499,9 @@ Détail des responsabilités par domaine : clinique, administratif, managérial,
 - Astreintes et gardes (si applicable)
 - Formation continue obligatoire
 
-Génère la fiche de poste complète et professionnelle. Sois TRÈS DÉTAILLÉ et précis dans chaque section."""
+Génère la fiche de poste complète et professionnelle. Sois TRÈS DÉTAILLÉ et précis dans chaque section.""",
     },
-
-        # =============================================================================
+    # =============================================================================
     # FICHE DE NOMINATION - 12 types conformes Grille ESPC
     # =============================================================================
     "fiche_nomination": {
@@ -547,9 +583,8 @@ V. DISPOSITIONS FINALES
 ---
 Cachet "Vu et approuvé" - Signature manuelle requise
 
-Génère le document officiel complet, prêt à imprimer. Adapte le style et le format selon le TYPE DE DOCUMENT."""
+Génère le document officiel complet, prêt à imprimer. Adapte le style et le format selon le TYPE DE DOCUMENT.""",
     },
-
     "programme_reunions_trimestrielles": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères un PROGRAMME DE RÉUNIONS TRIMESTRIELLES stratégique.
 
@@ -598,9 +633,8 @@ Décrire en 2-3 phrases par trimestre les objectifs poursuivis.
 - Période d'affichage: De janvier à décembre {periode}
 - Responsable de l'affichage: Chef de Centre adjoint
 
-Génère le tableau ci-dessus avec le contenu détaillé adapté au CSR NAGNENEFOUN."""
+Génère le tableau ci-dessus avec le contenu détaillé adapté au CSR NAGNENEFOUN.""",
     },
-
     "calendrier_nettoyage": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères un CALENDRIER DE NETTOYAGE conforme à la Norme 6.01 de la grille ESPC.
 
@@ -680,9 +714,8 @@ Génère un tableau avec 5 colonnes: Zone | Horaire | Tâches de nettoyage du so
 - Responsable du suivi: Major du centre
 - Période d'affichage: {periode} (renouvelé chaque année)
 
-Génère le calendrier complet avec le tableau détaillé ci-dessus adapté au CSR NAGNENEFOUN."""
+Génère le calendrier complet avec le tableau détaillé ci-dessus adapté au CSR NAGNENEFOUN.""",
     },
-
     "calendrier_reunions_mensuelles": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères un CALENDRIER DE RÉUNIONS MENSUELLES.
 
@@ -742,9 +775,8 @@ Exemple de structure du tableau (à adapter avec le vrai contexte du CSR):
 - Période d'affichage: De janvier à décembre {periode}
 - Responsable: Chef de Centre
 
-Génère le tableau ci-dessus avec le contenu détaillé adapté au CSR NAGNENEFOUN."""
+Génère le tableau ci-dessus avec le contenu détaillé adapté au CSR NAGNENEFOUN.""",
     },
-
     "grille_supervision_asc": {
         "system": """Tu es un superviseur de centre de santé (CSR) en Côte d'Ivoire. Tu génères une GRILLE DE SUPERVISION ASC conforme à la grille ESPC.
 
@@ -808,9 +840,8 @@ Le tableau doit couvrir les critères suivants avec des indicateurs précis:
 - Signature du Superviseur: ____________________
 - Date: ____/____/______
 
-Génère la grille complète avec le tableau d'évaluation détaillé, les notes et les rubriques à remplir."""
+Génère la grille complète avec le tableau d'évaluation détaillé, les notes et les rubriques à remplir.""",
     },
-
     "liste_coges": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères une LISTE DU PERSONNEL COGES conforme au format grille ESPC, prête à imprimer et afficher.
 
@@ -869,9 +900,8 @@ Colonne par colonne, voici ce qui doit figurer:
 - Date: ____/____/{periode}
 - Cachet et signature:
 
-Génère la liste complète avec le tableau détaillé, prête à l'emploi, avec les mentions officielles de la République de Côte d'Ivoire."""
+Génère la liste complète avec le tableau détaillé, prête à l'emploi, avec les mentions officielles de la République de Côte d'Ivoire.""",
     },
-
     "plan_action_infections_nosocomiales": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères un PLAN D'ACTION CONTRE LES INFECTIONS NOSOCOMIALES conforme à la grille ESPC.
 
@@ -937,9 +967,8 @@ Le tableau doit être complet et couvrir tous les aspects:
 - Responsable: Chef de Centre / Major
 - Période d'affichage: {periode} (renouvelé chaque année)
 
-Génère le plan complet avec le tableau détaillé ci-dessus adapté au CSR NAGNENEFOUN."""
+Génère le plan complet avec le tableau détaillé ci-dessus adapté au CSR NAGNENEFOUN.""",
     },
-
     "rapport_formation": {
         "system": """Tu es un responsable de centre de santé (CSR) en Côte d'Ivoire. Tu génères un RAPPORT DE FORMATION DU PERSONNEL conforme à la grille ESPC - Norme 2.01.
 
@@ -1013,9 +1042,8 @@ Lieu: Salle de réunion du CSR {nom_etablissement}
 - Modalités: Supervision des pratiques, observation directe
 - Prochaine session: [À définir]
 
-Génère le rapport complet adapté au CSR {nom_etablissement} pour le trimestre {trimestre} en {domaine} avec {nb_participants} participants."""
+Génère le rapport complet adapté au CSR {nom_etablissement} pour le trimestre {trimestre} en {domaine} avec {nb_participants} participants.""",
     },
-
     # =============================================================================
     # NOTES DE SERVICE (6 types exigés par la Grille ESPC)
     # =============================================================================
@@ -1043,8 +1071,8 @@ III. ATTRIBUTIONS / MISSIONS
 IV. APPLICATION
 V. DIFFUSION
 
-Génère une note de service officielle et conforme à la réglementation."""
-    }
+Génère une note de service officielle et conforme à la réglementation.""",
+    },
 }
 
 # =============================================================================
@@ -1075,40 +1103,42 @@ DOCUMENTS_LIST = [
 # FONCTIONS
 # =============================================================================
 
+
 def generer_avec_groq(system_prompt, user_prompt):
     """Génère du contenu avec l'API Groq en créant un client frais à chaque appel"""
     from dotenv import load_dotenv
     import os
-    
+
     # Déterminer le bon dossier de base
     if "__file__" in dir():
         _base = os.path.dirname(os.path.abspath(__file__))
     else:
         _base = os.getcwd()
-    
+
     # Charger la clé depuis .env
-    load_dotenv(os.path.join(_base, '.env'))
-    
+    load_dotenv(os.path.join(_base, ".env"))
+
     # Récupérer la clé (priorité: variable d'env existante > .env)
     api_key = os.environ.get("GROQ_API_KEY", "")
-    
+
     if not api_key:
         return "⚠️ Clé API Groq non configurée."
-    
+
     try:
         _client = Groq(api_key=api_key)
         response = _client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+                {"role": "user", "content": user_prompt},
             ],
             temperature=0.1,
-            max_tokens=4000
+            max_tokens=4000,
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"Erreur: {str(e)}"
+
 
 def creer_document_word(titre, contenu, meta=None):
     doc = Document()
@@ -1124,38 +1154,38 @@ def creer_document_word(titre, contenu, meta=None):
     doc.add_paragraph()
 
     # Parcours intelligent: détection des tableaux markdown et des paragraphes
-    lignes = contenu.split('\n')
+    lignes = contenu.split("\n")
     i = 0
-    
+
     while i < len(lignes):
         para = lignes[i]
         para_strip = para.strip()
-        
+
         if not para_strip:
             i += 1
             continue
-        
+
         # Détection d'un tableau markdown (ligne qui commence par |)
-        if para_strip.startswith('|') and para_strip.endswith('|'):
+        if para_strip.startswith("|") and para_strip.endswith("|"):
             # Collecter toutes les lignes du tableau
             rows = []
-            while i < len(lignes) and lignes[i].strip().startswith('|'):
+            while i < len(lignes) and lignes[i].strip().startswith("|"):
                 row_text = lignes[i].strip()
                 # Ignorer la ligne de séparation (|---|---|)
-                if '---' in row_text or '—' in row_text:
+                if "---" in row_text or "—" in row_text:
                     i += 1
                     continue
                 # Extraire les cellules
-                cells = [c.strip() for c in row_text.split('|')[1:-1]]
+                cells = [c.strip() for c in row_text.split("|")[1:-1]]
                 rows.append(cells)
                 i += 1
-            
+
             # Créer le tableau Word
             if rows:
                 nb_cols = max(len(row) for row in rows)
                 word_table = doc.add_table(rows=len(rows), cols=nb_cols)
-                word_table.style = 'Light Grid Accent 1'
-                
+                word_table.style = "Light Grid Accent 1"
+
                 for row_idx, row_data in enumerate(rows):
                     for col_idx in range(nb_cols):
                         cell_text = row_data[col_idx] if col_idx < len(row_data) else ""
@@ -1168,24 +1198,61 @@ def creer_document_word(titre, contenu, meta=None):
                                     run.bold = True
                 doc.add_paragraph()
             continue
-        
+
         # Titres et paragraphes
-        if any(x in para_strip.upper() for x in ['I.', 'II.', 'III.', 'IV.', 'V.', 'VI.', 'VII.', 'VIII.', 'IX.', 'X.']) and len(para_strip) < 60:
+        if (
+            any(
+                x in para_strip.upper()
+                for x in [
+                    "I.",
+                    "II.",
+                    "III.",
+                    "IV.",
+                    "V.",
+                    "VI.",
+                    "VII.",
+                    "VIII.",
+                    "IX.",
+                    "X.",
+                ]
+            )
+            and len(para_strip) < 60
+        ):
             doc.add_heading(para_strip, level=1)
-        elif any(x in para_strip.upper() for x in ['CONTEXTE', 'INFORMATIONS', 'DÉLIBÉRATIONS', 'DÉCISIONS', 'SIGNATURES', 'LISTE', 'OBSERVATIONS', 'CALENDRIER', 'OBJECTIFS', 'ACTIVITÉS', 'AFFICHAGE']) and len(para_strip) < 50:
+        elif (
+            any(
+                x in para_strip.upper()
+                for x in [
+                    "CONTEXTE",
+                    "INFORMATIONS",
+                    "DÉLIBÉRATIONS",
+                    "DÉCISIONS",
+                    "SIGNATURES",
+                    "LISTE",
+                    "OBSERVATIONS",
+                    "CALENDRIER",
+                    "OBJECTIFS",
+                    "ACTIVITÉS",
+                    "AFFICHAGE",
+                ]
+            )
+            and len(para_strip) < 50
+        ):
             doc.add_heading(para_strip, level=2)
-        elif para_strip.startswith('##'):
-            doc.add_heading(para_strip.replace('#', '').strip(), level=2)
+        elif para_strip.startswith("##"):
+            doc.add_heading(para_strip.replace("#", "").strip(), level=2)
         elif len(para_strip) > 0:
             p = doc.add_paragraph(para_strip)
-        
+
         i += 1
-    
+
     return doc
+
 
 # =============================================================================
 # FORMULAIRES PRÉ-CONFORMES
 # =============================================================================
+
 
 def get_form_fields(doc_type):
     fields = {}
@@ -1194,14 +1261,38 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 PV RÉUNION MENSUELLE (Conforme Grille ESPC)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["mois"] = st.selectbox("Mois", ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"])
+        fields["mois"] = st.selectbox(
+            "Mois",
+            [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ],
+        )
         # L'IA génère automatiquement tout le contenu
 
     elif doc_type == "pv_coges":
         st.markdown("### 📋 PV COGES (Trimestriel - Conforme Norme 1.02)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["trimestre"] = st.selectbox("Trimestre de réunion", ["T1 - Janvier-Mars", "T2 - Avril-Juin", "T3 - Juillet-Septembre", "T4 - Octobre-Décembre"])
+        fields["trimestre"] = st.selectbox(
+            "Trimestre de réunion",
+            [
+                "T1 - Janvier-Mars",
+                "T2 - Avril-Juin",
+                "T3 - Juillet-Septembre",
+                "T4 - Octobre-Décembre",
+            ],
+        )
 
     elif doc_type == "pv_ag":
         st.markdown("### 📋 PV ASSEMBLÉE GÉNÉRALE (Annuelle - Conforme Norme 1.03)")
@@ -1217,13 +1308,19 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 RAPPORT BOÎTE À SUGGESTIONS")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["nb_suggestions"] = st.text_input("Nombre de suggestions reçues", "")
-        fields["types_suggestions"] = st.text_area("Types de suggestions (séparées par ;)", "Amélioration accueil ; Attente ; Hygiène ; Médicaments ; Autre")
-        fields["actions"] = st.text_area("Actions menées (séparées par ;)", "Analyse des suggestions ; Réunion de réflexion ; Plan d'action")
+        fields["types_suggestions"] = st.text_area(
+            "Types de suggestions (séparées par ;)",
+            "Amélioration accueil ; Attente ; Hygiène ; Médicaments ; Autre",
+        )
+        fields["actions"] = st.text_area(
+            "Actions menées (séparées par ;)",
+            "Analyse des suggestions ; Réunion de réflexion ; Plan d'action",
+        )
 
     elif doc_type == "fiche_poste":
         st.markdown("### 📋 FICHE DE POSTE (Template par catégorie)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
-        
+
         categories_poste = {
             "Chef de Centre": {
                 "titre": "Chef de Centre de Santé",
@@ -1233,7 +1330,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme d'État de Sage-Femme ou Infirmier Diplômé d'État (IDE) ; Diplôme en Santé Publique (optionnel) ; Expérience minimale de 3 ans dans un centre de santé",
                 "competences": "Leadership et management d'équipe ; Maîtrise des outils de planification ; Bonne connaissance du système de santé ivoirien",
                 "responsabilites": "Responsable de la bonne marche du centre ; Responsable de la gestion du personnel ; Responsable de la qualité des soins",
-                "moyens": "Bureau équipé (ordinateur, imprimante) ; Véhicule de service (si disponible) ; Budget de fonctionnement"
+                "moyens": "Bureau équipé (ordinateur, imprimante) ; Véhicule de service (si disponible) ; Budget de fonctionnement",
             },
             "Major / Sage-Femme": {
                 "titre": "Major / Sage-Femme Diplômé(e) d'État",
@@ -1243,7 +1340,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme d'État de Sage-Femme (DESF) ; Inscription à l'Ordre national des Sages-Femmes ; Expérience minimale de 2 ans en maternité",
                 "competences": "Maîtrise des techniques obstétricales ; Capacité à gérer les urgences vitales ; Leadership et encadrement d'équipe",
                 "responsabilites": "Responsable des activités de la maternité ; Responsable de la qualité des soins maternels et infantiles",
-                "moyens": "Salle d'accouchement équipée ; Matériel de réanimation néonatale ; Kits d'accouchement"
+                "moyens": "Salle d'accouchement équipée ; Matériel de réanimation néonatale ; Kits d'accouchement",
             },
             "Infirmier Diplômé d'État (IDE)": {
                 "titre": "Infirmier Diplômé d'État (IDE)",
@@ -1253,7 +1350,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme d'État d'Infirmier (DEI) ; Inscription à l'Ordre national des Infirmiers ; Expérience minimale de 1 an",
                 "competences": "Maîtrise des protocoles de soins infirmiers ; Capacité à diagnostiquer les pathologies courantes ; Bon relationnel avec les patients",
                 "responsabilites": "Responsable des soins infirmiers quotidiens ; Responsable de la tenue des registres",
-                "moyens": "Bocson médical complet ; Stéthoscope, tensiomètre ; Matériel de soins"
+                "moyens": "Bocson médical complet ; Stéthoscope, tensiomètre ; Matériel de soins",
             },
             "Chargé(e) de Programme (PEV/Paludisme/VIH)": {
                 "titre": "Chargé(e) de Programme",
@@ -1263,7 +1360,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme d'État d'Infirmier ou Sage-Femme ; Formation spécifique au programme ; Expérience minimale de 2 ans",
                 "competences": "Maîtrise des protocoles du programme ; Capacité à former et superviser ; Gestion de données",
                 "responsabilites": "Responsable de l'atteinte des objectifs du programme ; Responsable de la gestion des intrants",
-                "moyens": "Bureau partagé avec équipement informatique ; Matériel de supervision"
+                "moyens": "Bureau partagé avec équipement informatique ; Matériel de supervision",
             },
             "Aide-Soignant(e)": {
                 "titre": "Aide-Soignant(e)",
@@ -1273,7 +1370,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Certificat d'Aide-Soignant(e) ; Expérience en milieu de santé (1 an minimum)",
                 "competences": "Sens de l'organisation et de la propreté ; Capacité à suivre les consignes ; Empathie et respect des patients",
                 "responsabilites": "Responsable de la propreté des zones de soins ; Responsable de l'entretien du matériel",
-                "moyens": "Matériel d'entretien et de nettoyage ; Équipements de protection"
+                "moyens": "Matériel d'entretien et de nettoyage ; Équipements de protection",
             },
             "Secrétaire / Agent Administratif": {
                 "titre": "Secrétaire / Agent Administratif",
@@ -1283,7 +1380,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme de Secrétariat ou BTS Administration ; Maîtrise des outils bureautiques",
                 "competences": "Excellente présentation ; Maîtrise de la bureautique ; Organisation et rigueur",
                 "responsabilites": "Responsable de la tenue des archives ; Responsable de la gestion du courrier",
-                "moyens": "Bureau équipé (ordinateur, imprimante, téléphone)"
+                "moyens": "Bureau équipé (ordinateur, imprimante, téléphone)",
             },
             "Agent d'Entretien / Fille de Salle": {
                 "titre": "Agent d'Entretien",
@@ -1293,7 +1390,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Niveau primaire ou secondaire ; Formation aux règles d'hygiène",
                 "competences": "Sens de la propreté ; Connaissance des techniques d'entretien ; Ponctualité",
                 "responsabilites": "Responsable de la propreté des locaux ; Responsable du tri des déchets",
-                "moyens": "Produits d'entretien et de désinfection ; Équipements de protection"
+                "moyens": "Produits d'entretien et de désinfection ; Équipements de protection",
             },
             "Gardien / Planton": {
                 "titre": "Gardien / Planton",
@@ -1303,7 +1400,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Niveau primaire minimum ; Expérience en surveillance (optionnel)",
                 "competences": "Vigilance ; Ponctualité et fiabilité ; Sens des responsabilités",
                 "responsabilites": "Responsable de la sécurité du centre ; Responsable des clés",
-                "moyens": "Local de garde ; Lampe torche ; Téléphone de service"
+                "moyens": "Local de garde ; Lampe torche ; Téléphone de service",
             },
             "ASC (Agent de Santé Communautaire)": {
                 "titre": "Agent de Santé Communautaire (ASC)",
@@ -1313,7 +1410,7 @@ def get_form_fields(doc_type):
                 "qualifications": "Niveau secondaire (BEPC minimum) ; Formation ASC validée ; Parlant la langue locale",
                 "competences": "Capacité à communiquer ; Connaissance de la communauté ; Dynamisme",
                 "responsabilites": "Responsable des activités communautaires ; Responsable du matériel de sensibilisation",
-                "moyens": "Kit ASC ; MILD et préservatifs ; Supports IEC/CCC ; Vélo (si disponible)"
+                "moyens": "Kit ASC ; MILD et préservatifs ; Supports IEC/CCC ; Vélo (si disponible)",
             },
             "Pharmacien / Chargé Pharmacie": {
                 "titre": "Pharmacien / Chargé de la Pharmacie",
@@ -1323,16 +1420,20 @@ def get_form_fields(doc_type):
                 "qualifications": "Diplôme de Technicien Supérieur en Pharmacie ou IDE formé ; Expérience de 2 ans",
                 "competences": "Maîtrise de la gestion des stocks ; Connaissance des médicaments essentiels ; Rigueur et organisation",
                 "responsabilites": "Responsable de la gestion des médicaments ; Responsable de la pharmacie",
-                "moyens": "Pharmacie équipée ; Logiciel de gestion de stock ; Mobilier de rangement"
-            }
+                "moyens": "Pharmacie équipée ; Logiciel de gestion de stock ; Mobilier de rangement",
+            },
         }
-        
-        cat_choice = st.selectbox("Catégorie du personnel", list(categories_poste.keys()))
+
+        cat_choice = st.selectbox(
+            "Catégorie du personnel", list(categories_poste.keys())
+        )
         cat_data = categories_poste[cat_choice]
         fields["categorie_poste"] = cat_choice
         fields["titre_poste"] = cat_data["titre"]
         nom_titulaire = st.text_input("Nom du titulaire du poste", "")
-        fields["nom_titulaire"] = nom_titulaire if nom_titulaire else "[Nom du titulaire]"
+        fields["nom_titulaire"] = (
+            nom_titulaire if nom_titulaire else "[Nom du titulaire]"
+        )
         fields["superieur"] = cat_data["superieur"]
         fields["regime_travail"] = cat_data["regime"]
         fields["missions_poste"] = cat_data["missions"]
@@ -1346,22 +1447,80 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 FICHE DE NOMINATION (12 types conformes Grille ESPC)")
 
         types_nomination = [
-            ("Note de service", "Responsable de l'ESPC (Chef d'établissement)", "1.01 d", "Directeur Départemental (DD)"),
-            ("Note de service", "Responsable de chaque service (dispensaire, maternité...)", "1.01 d", "Responsable de l'ESPC"),
-            ("Arrêté préfectoral / sous-préfectoral", "Mise en place du COGES", "1.02 a", "Préfet / Sous-préfet"),
+            (
+                "Note de service",
+                "Responsable de l'ESPC (Chef d'établissement)",
+                "1.01 d",
+                "Directeur Départemental (DD)",
+            ),
+            (
+                "Note de service",
+                "Responsable de chaque service (dispensaire, maternité...)",
+                "1.01 d",
+                "Responsable de l'ESPC",
+            ),
+            (
+                "Arrêté préfectoral / sous-préfectoral",
+                "Mise en place du COGES",
+                "1.02 a",
+                "Préfet / Sous-préfet",
+            ),
             ("Note de service", "Point focal CMU", "4.03 c", "Responsable de l'ESPC"),
-            ("Fiche de poste signée", "Agent d'accueil et d'orientation", "4.02 b", "Agent + Responsable ESPC"),
-            ("Note de service", "Responsable de l'hygiène hospitalière", "6.01 a", "Responsable ESPC"),
-            ("Note de service", "Responsable de la gestion des déchets biomédicaux", "6.05 a", "Responsable ESPC"),
-            ("Note de service + fiche de poste", "Gestionnaire des médicaments (pharmacie)", "11.01 g", "Agent + Responsable ESPC"),
-            ("Fiche de poste signée", "Personnel qualifié pour accouchements (SF/IDE/Maïeuticien)", "7.02 a", "Agent + Responsable ESPC"),
-            ("Fiche de poste signée", "Tout agent (vérifié sur 3 noms)", "2.01 b", "Agent + Responsable ESPC"),
-            ("Liste officielle nominative", "Agents de santé communautaire (ASC)", "14.01 a", "District sanitaire"),
-            ("Grille de supervision ASC", "Acte de supervision ASC", "14.01 c", "ASC + Superviseur")
+            (
+                "Fiche de poste signée",
+                "Agent d'accueil et d'orientation",
+                "4.02 b",
+                "Agent + Responsable ESPC",
+            ),
+            (
+                "Note de service",
+                "Responsable de l'hygiène hospitalière",
+                "6.01 a",
+                "Responsable ESPC",
+            ),
+            (
+                "Note de service",
+                "Responsable de la gestion des déchets biomédicaux",
+                "6.05 a",
+                "Responsable ESPC",
+            ),
+            (
+                "Note de service + fiche de poste",
+                "Gestionnaire des médicaments (pharmacie)",
+                "11.01 g",
+                "Agent + Responsable ESPC",
+            ),
+            (
+                "Fiche de poste signée",
+                "Personnel qualifié pour accouchements (SF/IDE/Maïeuticien)",
+                "7.02 a",
+                "Agent + Responsable ESPC",
+            ),
+            (
+                "Fiche de poste signée",
+                "Tout agent (vérifié sur 3 noms)",
+                "2.01 b",
+                "Agent + Responsable ESPC",
+            ),
+            (
+                "Liste officielle nominative",
+                "Agents de santé communautaire (ASC)",
+                "14.01 a",
+                "District sanitaire",
+            ),
+            (
+                "Grille de supervision ASC",
+                "Acte de supervision ASC",
+                "14.01 c",
+                "ASC + Superviseur",
+            ),
         ]
 
-        type_index = st.selectbox("Type de document", range(len(types_nomination)),
-            format_func=lambda i: f"{types_nomination[i][0]} - {types_nomination[i][1]} (Norme {types_nomination[i][2]})")
+        type_index = st.selectbox(
+            "Type de document",
+            range(len(types_nomination)),
+            format_func=lambda i: f"{types_nomination[i][0]} - {types_nomination[i][1]} (Norme {types_nomination[i][2]})",
+        )
 
         type_choisi = types_nomination[type_index]
         fields["type_nomination"] = type_choisi[0]
@@ -1370,12 +1529,21 @@ def get_form_fields(doc_type):
         fields["signataire"] = type_choisi[3]
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["nom_beneficiaire"] = st.text_input("Nom du bénéficiaire", "")
-        fields["fonction_beneficiaire"] = st.text_input("Fonction du bénéficiaire", type_choisi[1].split(" (")[0] if " (" in type_choisi[1] else type_choisi[1])
+        fields["fonction_beneficiaire"] = st.text_input(
+            "Fonction du bénéficiaire",
+            type_choisi[1].split(" (")[0] if " (" in type_choisi[1] else type_choisi[1],
+        )
         fields["date_effet"] = st.text_input("Date de prise d'effet (JJ/MM/AAAA)", "")
-        fields["numero_ordre"] = st.text_input("Numéro d'ordre", "____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN")
-        st.caption(f"**Signataire requis :** {type_choisi[3]} | **Norme ESPC :** {type_choisi[2]}")
+        fields["numero_ordre"] = st.text_input(
+            "Numéro d'ordre", "____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN"
+        )
+        st.caption(
+            f"**Signataire requis :** {type_choisi[3]} | **Norme ESPC :** {type_choisi[2]}"
+        )
 
-        fields["match_categorie"] = f"TYPE: {type_choisi[0]} | OBJET: {type_choisi[1]} | NORME: {type_choisi[2]}"
+        fields["match_categorie"] = (
+            f"TYPE: {type_choisi[0]} | OBJET: {type_choisi[1]} | NORME: {type_choisi[2]}"
+        )
 
     elif doc_type == "programme_reunions_trimestrielles":
         st.markdown("### 📋 PROGRAMME RÉUNIONS TRIMESTRIELLES")
@@ -1386,8 +1554,13 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 CALENDRIER NETTOYAGE (Conforme Norme 6.01 - À AFFICHER)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["zones"] = st.text_area("Zones à nettoyer (séparées par ;)", "Salle de consultation ; Maternité ; Hall d'attente ; Toilettes ; Cour")
-        fields["frequences"] = st.text_area("Fréquences (séparées par ;)", "Quotidien ; Hebdomadaire ; Mensuel")
+        fields["zones"] = st.text_area(
+            "Zones à nettoyer (séparées par ;)",
+            "Salle de consultation ; Maternité ; Hall d'attente ; Toilettes ; Cour",
+        )
+        fields["frequences"] = st.text_area(
+            "Fréquences (séparées par ;)", "Quotidien ; Hebdomadaire ; Mensuel"
+        )
 
     elif doc_type == "calendrier_reunions_mensuelles":
         st.markdown("### 📋 CALENDRIER RÉUNIONS MENSUELLES")
@@ -1398,7 +1571,10 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 GRILLE SUPERVISION ASC (À signer ASC + Superviseur)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["criteria"] = st.text_area("Critères de supervision (séparés par ;)", "Accueil ; Sensibilisation ; Dépistage ; Référence ; Documentation")
+        fields["criteria"] = st.text_area(
+            "Critères de supervision (séparés par ;)",
+            "Accueil ; Sensibilisation ; Dépistage ; Référence ; Documentation",
+        )
 
     elif doc_type == "liste_coges":
         st.markdown("### 📋 LISTE PERSONNEL COGES (Format grille ESPC)")
@@ -1411,7 +1587,7 @@ def get_form_fields(doc_type):
             "Konan Bertille ; Secrétaire ; 0102030407\n"
             "Kouamé Yao ; Trésorier ; 0102030408\n"
             "Soro Fatoumata ; Commissaire aux Comptes ; 0102030409\n"
-            "Touré Mamadou ; Membre ; 0102030410"
+            "Touré Mamadou ; Membre ; 0102030410",
         )
 
     elif doc_type == "liste_personnel_centre":
@@ -1423,24 +1599,44 @@ def get_form_fields(doc_type):
         st.markdown("### 📋 PLAN ACTION INFECTIONS NOSOCOMIALES")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["activites"] = st.text_area("Activités principales (séparées par ;)", "Formation personnel ; Désinfection ; Lavage des mains ; Gestion des déchets ; Surveillance")
+        fields["activites"] = st.text_area(
+            "Activités principales (séparées par ;)",
+            "Formation personnel ; Désinfection ; Lavage des mains ; Gestion des déchets ; Surveillance",
+        )
 
     elif doc_type == "plan_supervision_asc":
         st.markdown("### 📋 PLAN SUPERVISION ASC (Plan annuel)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["activites"] = st.text_area("Activités de supervision (séparées par ;)", "Inspection terrain ; Formation ; Dépistage communautaire ; Référence")
+        fields["activites"] = st.text_area(
+            "Activités de supervision (séparées par ;)",
+            "Inspection terrain ; Formation ; Dépistage communautaire ; Référence",
+        )
 
     elif doc_type == "rapport_formation":
         st.markdown("### 📋 RAPPORT FORMATION (Trimestriel - Norme 2.01)")
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
         fields["periode"] = st.text_input("Période (Année)", "2026")
-        fields["trimestre"] = st.selectbox("Trimestre", ["T1 - Janvier-Mars", "T2 - Avril-Juin", "T3 - Juillet-Septembre", "T4 - Octobre-Décembre"])
-        fields["domaine"] = st.text_input("Domaine de formation", "ex: Paludisme, PEV, VIH, CPN, Hygiène...")
+        fields["trimestre"] = st.selectbox(
+            "Trimestre",
+            [
+                "T1 - Janvier-Mars",
+                "T2 - Avril-Juin",
+                "T3 - Juillet-Septembre",
+                "T4 - Octobre-Décembre",
+            ],
+        )
+        fields["domaine"] = st.text_input(
+            "Domaine de formation", "ex: Paludisme, PEV, VIH, CPN, Hygiène..."
+        )
         fields["date_formation"] = st.text_input("Date de la formation", "00/00/2026")
         fields["duree"] = st.text_input("Durée", "1 jour (5h30)")
-        fields["formateur"] = st.text_input("Formateur(s)", "Major / Infirmier superviseur / Chargé de programme")
-        fields["nb_participants"] = st.number_input("Nombre de participants", min_value=1, max_value=50, value=12)
+        fields["formateur"] = st.text_input(
+            "Formateur(s)", "Major / Infirmier superviseur / Chargé de programme"
+        )
+        fields["nb_participants"] = st.number_input(
+            "Nombre de participants", min_value=1, max_value=50, value=12
+        )
 
     elif doc_type == "note_service":
         st.markdown("### 📋 NOTE DE SERVICE (Conforme Grille ESPC)")
@@ -1451,7 +1647,7 @@ def get_form_fields(doc_type):
             "Désignation du Point Focal CMU",
             "Désignation du Responsable de l'Hygiène",
             "Désignation du Responsable de la Gestion des Déchets Biomédicaux",
-            "Désignation du Gestionnaire des Médicaments en Pharmacie"
+            "Désignation du Gestionnaire des Médicaments en Pharmacie",
         ]
         fields["type_note"] = st.selectbox("Type de note de service", types_notes)
         fields["nom_etablissement"] = st.text_input("Établissement", "CSR NAGNENEFOUN")
@@ -1461,6 +1657,7 @@ def get_form_fields(doc_type):
 
     return fields
 
+
 # =============================================================================
 # GÉNÉRATEUR DE PLANNING - Cycle PG → R → P
 # =============================================================================
@@ -1468,14 +1665,25 @@ def get_form_fields(doc_type):
 PLANNING_CYCLE = ["PG", "R", "P"]
 
 PLANNING_CATEGORIES = [
-    {"id": "infirmier-dispensaire", "label": "Infirmiers (Dispensaire)", "prefixe": "Infirmier"},
+    {
+        "id": "infirmier-dispensaire",
+        "label": "Infirmiers (Dispensaire)",
+        "prefixe": "Infirmier",
+    },
     {"id": "aide-dispensaire", "label": "Aides (Dispensaire)", "prefixe": "Aide"},
-    {"id": "sage-femme-maternite", "label": "Sages-femmes (Maternité)", "prefixe": "Sage-femme"},
+    {
+        "id": "sage-femme-maternite",
+        "label": "Sages-femmes (Maternité)",
+        "prefixe": "Sage-femme",
+    },
     {"id": "aide-maternite", "label": "Aides (Maternité)", "prefixe": "Aide"},
     {"id": "fille-salle", "label": "Filles de salle", "prefixe": "Fille de salle"},
 ]
 
-PLANNING_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "employes.json")
+PLANNING_DATA_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "employes.json"
+)
+
 
 def charger_employes():
     try:
@@ -1486,9 +1694,11 @@ def charger_employes():
         pass
     return []
 
+
 def sauvegarder_employes(employes):
     with open(PLANNING_DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(employes, f, ensure_ascii=False, indent=2)
+
 
 def generer_planning_employe(cycle_position, annee, mois):
     jours_dans_mois = calendar.monthrange(annee, mois + 1)[1]
@@ -1499,14 +1709,17 @@ def generer_planning_employe(cycle_position, annee, mois):
         position = (position + 1) % len(PLANNING_CYCLE)
     return planning, position
 
+
 def set_shading(cell, color_hex):
     from docx.oxml import OxmlElement
+
     tc = cell._element.get_or_add_tcPr()
-    for shd in tc.findall(qn('w:shd')):
+    for shd in tc.findall(qn("w:shd")):
         tc.remove(shd)
-    shd = OxmlElement('w:shd')
-    shd.set(qn('w:fill'), color_hex)
+    shd = OxmlElement("w:shd")
+    shd.set(qn("w:fill"), color_hex)
     tc.append(shd)
+
 
 def exporter_planning_word(plannings_data, service_label, mois, annee, centre_sante=""):
     doc = Document()
@@ -1551,14 +1764,20 @@ def exporter_planning_word(plannings_data, service_label, mois, annee, centre_sa
                 row[j + 1].text = shift["shift"]
     return doc
 
+
 def afficher_page_planning():
-    st.markdown("<h1 style='text-align: center;'>🏥 GÉNÉRATEUR DE PLANNING</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #666;'>Cycle automatique: <b>PG</b> (Permanence+Garde) → <b>P</b> (Permanence) → <b>R</b> (Repos)</p>", unsafe_allow_html=True)
+    st.title("🏥 GÉNÉRATEUR DE PLANNING")
+    st.caption(
+        "Cycle automatique: **PG** (Permanence+Garde) → **P** (Permanence) → **R** (Repos)"
+    )
 
     col1, col2, col3 = st.columns(3)
-    with col1: st.markdown("**PG** = Permanence + Garde")
-    with col2: st.markdown("**P** = Permanence")
-    with col3: st.markdown("**R** = Repos")
+    with col1:
+        st.markdown("**PG** = Permanence + Garde")
+    with col2:
+        st.markdown("**P** = Permanence")
+    with col3:
+        st.markdown("**R** = Repos")
     st.divider()
 
     employes_fresh = charger_employes()
@@ -1574,232 +1793,386 @@ def afficher_page_planning():
             employes_cat = [e for e in employes_fresh if e["service"] == cat["id"]]
             st.caption(f"{len(employes_cat)} employé(s)")
             with st.form(f"plan_form_{cat['id']}"):
-                nouveau_nom = st.text_input("Nom", placeholder="Ex: YEO", key=f"plan_nom_{cat['id']}")
-                submitted = st.form_submit_button("➕ Ajouter", use_container_width=True)
+                nouveau_nom = st.text_input(
+                    "Nom", placeholder="Ex: YEO", key=f"plan_nom_{cat['id']}"
+                )
+                submitted = st.form_submit_button(
+                    "➕ Ajouter", use_container_width=True
+                )
                 if submitted and nouveau_nom:
-                    employes_meme_service = [e for e in employes_fresh if e["service"] == cat["id"]]
-                    nouvelle_pos = (max([e["cyclePosition"] for e in employes_meme_service]) + 1) % len(PLANNING_CYCLE) if employes_meme_service else 0
-                    nouveau = {"id": len(employes_fresh) + 1, "nom": nouveau_nom.upper(), "prenom": cat["prefixe"], "service": cat["id"], "cyclePosition": nouvelle_pos}
+                    employes_meme_service = [
+                        e for e in employes_fresh if e["service"] == cat["id"]
+                    ]
+                    nouvelle_pos = (
+                        (max([e["cyclePosition"] for e in employes_meme_service]) + 1)
+                        % len(PLANNING_CYCLE)
+                        if employes_meme_service
+                        else 0
+                    )
+                    nouveau = {
+                        "id": len(employes_fresh) + 1,
+                        "nom": nouveau_nom.upper(),
+                        "prenom": cat["prefixe"],
+                        "service": cat["id"],
+                        "cyclePosition": nouvelle_pos,
+                    }
                     employes_fresh.append(nouveau)
                     sauvegarder_employes(employes_fresh)
                     st.rerun()
             for emp in employes_cat:
                 col_a, col_b = st.columns([3, 1])
-                with col_a: st.markdown(f"**{emp['nom']}**")
+                with col_a:
+                    st.markdown(f"**{emp['nom']}**")
                 with col_b:
                     if st.button("×", key=f"plan_del_{emp['id']}_{cat['id']}"):
-                        employes_fresh = [e for e in employes_fresh if e["id"] != emp["id"]]
+                        employes_fresh = [
+                            e for e in employes_fresh if e["id"] != emp["id"]
+                        ]
                         sauvegarder_employes(employes_fresh)
                         st.rerun()
     st.divider()
 
     # Générateur
     st.header("📅 Générer le Planning")
-    centre_sante = st.text_input("🏥 Nom du Centre", placeholder="Ex: CSR NAGNENEFOUN", value="CSR NAGNENEFOUN")
+    centre_sante = st.text_input(
+        "🏥 Nom du Centre", placeholder="Ex: CSR NAGNENEFOUN", value="CSR NAGNENEFOUN"
+    )
     col1, col2, col3 = st.columns(3)
     with col1:
-        mois = st.selectbox("Mois", ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"], index=datetime.now().month - 1)
+        mois = st.selectbox(
+            "Mois",
+            [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ],
+            index=datetime.now().month - 1,
+        )
     with col2:
-        annee = st.number_input("Année", min_value=2020, max_value=2030, value=datetime.now().year)
+        annee = st.number_input(
+            "Année", min_value=2020, max_value=2030, value=datetime.now().year
+        )
     with col3:
         generer_tous = st.checkbox("Tous les services", value=False)
-        service = None if generer_tous else st.selectbox("Service", PLANNING_CATEGORIES, format_func=lambda x: x["label"])
+        service = (
+            None
+            if generer_tous
+            else st.selectbox(
+                "Service", PLANNING_CATEGORIES, format_func=lambda x: x["label"]
+            )
+        )
 
     if st.button("🔄 Générer le Planning", type="primary", use_container_width=True):
-        employes_service = employes_fresh if service is None else [e for e in employes_fresh if e["service"] == service["id"]]
+        employes_service = (
+            employes_fresh
+            if service is None
+            else [e for e in employes_fresh if e["service"] == service["id"]]
+        )
         if not employes_service:
             st.warning("Aucun employé dans ce service !")
         else:
-            mois_num = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"].index(mois)
+            mois_num = [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ].index(mois)
             employes_fresh = charger_employes()
-            employes_service = employes_fresh if service is None else [e for e in employes_fresh if e["service"] == service["id"]]
+            employes_service = (
+                employes_fresh
+                if service is None
+                else [e for e in employes_fresh if e["service"] == service["id"]]
+            )
             plannings = []
             for emp in employes_service:
-                planning, _ = generer_planning_employe(emp["cyclePosition"], annee, mois_num)
-                plannings.append({"nom": emp["nom"], "prenom": emp["prenom"], "planning": planning})
+                planning, _ = generer_planning_employe(
+                    emp["cyclePosition"], annee, mois_num
+                )
+                plannings.append(
+                    {"nom": emp["nom"], "prenom": emp["prenom"], "planning": planning}
+                )
             st.success(f"✅ Planning généré pour {len(plannings)} employé(s)")
             jours = len(plannings[0]["planning"])
-            html = '<div style="overflow-x:auto;max-width:100%;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:8px;background-color:#3498DB;color:white;text-align:center;white-space:nowrap;">Nom & Prénom</th>'
-            for i in range(jours):
-                html += f'<th style="border:1px solid #ddd;padding:8px;background-color:#3498DB;color:white;text-align:center;">{i+1:02d}</th>'
-            html += '</tr></thead><tbody>'
+
+            # Afficher le tableau avec Streamlit natif
+            st.subheader("📅 Planning du mois")
+            headers = ["Nom & Prénom"] + [f"{i + 1:02d}" for i in range(jours)]
+            data = []
             for emp in plannings:
-                html += f'<tr><td style="border:1px solid #ddd;padding:8px;font-weight:bold;">{emp["nom"]}</td>'
+                row = [emp["nom"]]
                 for shift in emp["planning"]:
-                    color = "#d4edda" if shift["shift"] == "R" else ("#fff3cd" if shift["shift"] == "PG" else "#f8f9fa")
-                    html += f'<td style="border:1px solid #ddd;padding:8px;text-align:center;background:{color};">{shift["shift"]}</td>'
-                html += '</tr>'
-            html += '</tbody></table></div>'
-            st.markdown(html, unsafe_allow_html=True)
+                    row.append(shift["shift"])
+                data.append(row)
+            st.dataframe(pd.DataFrame(data, columns=headers), use_container_width=True)
+
             service_label = service["label"] if service else "Tous les services"
-            doc = exporter_planning_word(plannings, service_label, mois, annee, centre_sante)
-            temp_file = f"planning_{service['id'] if service else 'tous'}_{mois}_{annee}.docx"
+            doc = exporter_planning_word(
+                plannings, service_label, mois, annee, centre_sante
+            )
+            temp_file = (
+                f"planning_{service['id'] if service else 'tous'}_{mois}_{annee}.docx"
+            )
             doc.save(temp_file)
             with open(temp_file, "rb") as f:
-                st.download_button("📄 Exporter en Word", f.read(), file_name=temp_file, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                st.download_button(
+                    "📄 Exporter en Word",
+                    f.read(),
+                    file_name=temp_file,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+
+
+# GESTION DU PERSONNEL - MODULE SIMPLIFIÉ
+# =============================================================================
+
+
+def afficher_page_personnel():
+    """Page de gestion du personnel CSR NAGNENEFOUN"""
+    import personnel_db as pdb
+
+    st.title("👥 GESTION DU PERSONNEL")
+    st.caption("Enregistrez le personnel et attribuez leurs responsabilités")
+    st.divider()
+
+    # Initialiser la base de données
+    pdb.init_personnel_db()
+
+    # Onglets: Inscription / Liste / Responsabilités
+    onglet1, onglet2, onglet3 = st.tabs(
+        ["📝 Inscription", "📋 Liste Personnel", "🎯 Responsabilités"]
+    )
+
+    # =========================================================================
+    # ONGLET 1: FORMULAIRE D'INSCRIPTION SIMPLIFIÉ
+    # =========================================================================
+    with onglet1:
+        st.markdown("### ➕ Nouvelle inscription")
+        st.markdown(
+            "**Formulaire simplifié** - Remplissez les informations du membre du personnel"
+        )
+
+        with st.form("form_inscription"):
+            col1, col2 = st.columns(2)
+            with col1:
+                nom = st.text_input("Nom *", placeholder="Ex: KONÉ")
+            with col2:
+                prenoms = st.text_input("Prénoms", placeholder="Ex: Awa")
+
+            fonction = st.selectbox("Fonction *", pdb.get_fonctions_disponibles())
+            telephone = st.text_input("Téléphone", placeholder="Ex: 0700000000")
+
+            submitted = st.form_submit_button(
+                "💾 Enregistrer", use_container_width=True
+            )
+
+            if submitted and nom:
+                try:
+                    personnel_id = pdb.ajouter_personnel(
+                        nom=nom.upper(),
+                        fonction=fonction,
+                        prenoms=prenoms,
+                        telephone=telephone,
+                    )
+                    st.success(f"✅ {nom.upper()} enregistré(e) avec succès!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur: {str(e)}")
+            elif submitted and not nom:
+                st.warning("⚠️ Le nom est obligatoire")
+
+    # =========================================================================
+    # ONGLET 2: LISTE DU PERSONNEL
+    # =========================================================================
+    with onglet2:
+        st.markdown("### 📋 Liste du Personnel")
+
+        tout_personnel = pdb.get_tout_personnel()
+
+        if tout_personnel:
+            st.info(f"📊 Total: {len(tout_personnel)} membre(s)")
+
+            # Filtre par fonction
+            fonctions = ["Tous"] + pdb.get_fonctions_disponibles()
+            filtre = st.selectbox("Filtrer par fonction", fonctions)
+
+            if filtre != "Tous":
+                tout_personnel = [p for p in tout_personnel if p["fonction"] == filtre]
+
+            # Afficher la liste
+            for p in tout_personnel:
+                with st.container():
+                    col1, col2, col3 = st.columns([3, 2, 1])
+                    with col1:
+                        st.markdown(f"**{p['nom']}** {p['prenom'] or ''}")
+                        st.caption(f"📞 {p['telephone'] or 'Non renseigné'}")
+                    with col2:
+                        st.markdown(f"🏥 {p['fonction']}")
+                        st.caption(f"📅 Depuis: {p['date_ajout']}")
+                    with col3:
+                        if st.button("🗑️", key=f"del_{p['id']}"):
+                            pdb.supprimer_personnel(p["id"])
+                            st.rerun()
+                    st.markdown("---")
+        else:
+            st.info(
+                "Aucun personnel enregistré. Utilisez le formulaire ci-dessus pour commencer."
+            )
+
+    # =========================================================================
+    # ONGLET 3: ATTRIBUTION DES RESPONSABILITÉS
+    # =========================================================================
+    with onglet3:
+        st.markdown("### 🎯 Attribuer une responsabilité")
+        st.markdown(
+            "Sélectionnez un membre du personnel et attribuez-lui une responsabilité"
+        )
+
+        tout_personnel = pdb.get_tout_personnel()
+
+        if tout_personnel:
+            # Sélection du personnel
+            options = [
+                f"{p['nom']} {p['prenom'] or ''} - {p['fonction']}"
+                for p in tout_personnel
+            ]
+            selected = st.selectbox("Membre du personnel *", options)
+            selected_index = options.index(selected)
+            selected_personnel = tout_personnel[selected_index]
+
+            # Afficher les responsabilités actuelles
+            resp_actuelles = pdb.get_responsabilites_personnel(selected_personnel["id"])
+            if resp_actuelles:
+                st.markdown("**Responsabilités actuelles:**")
+                for r in resp_actuelles:
+                    st.markdown(
+                        f"- ✅ {r['responsabilite']} (depuis {r['date_affectation']})"
+                    )
+            else:
+                st.info("Ce membre n'a pas encore de responsabilité attribuée.")
+
+            st.markdown("---")
+
+            # Nouvelle responsabilité
+            st.markdown("**Nouvelle responsabilité:**")
+            responsabilite = st.selectbox(
+                "Responsabilité *", pdb.get_responsabilites_types()
+            )
+            notes = st.text_area(
+                "Notes (optionnel)", placeholder="Ex: Prend effet immédiatement"
+            )
+
+            if st.button("➕ Ajouter la responsabilité", use_container_width=True):
+                try:
+                    pdb.ajouter_responsabilite(
+                        personnel_id=selected_personnel["id"],
+                        responsabilite=responsabilite,
+                        notes=notes,
+                    )
+                    st.success(
+                        f"✅ Responsabilité attribuée à {selected_personnel['nom']}!"
+                    )
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur: {str(e)}")
+        else:
+            st.info(
+                "Aucun personnel enregistré. Ajoutez d'abord du personnel dans l'onglet 'Inscription'."
+            )
+
+    st.divider()
+    st.caption("**CSR NAGNENEFOUN** — District Sanitaire de KORHOGO 1 — Région du PORO")
+
+
+# =============================================================================
+# PAGES (fonctions séparées pour st.navigation)
+# =============================================================================
+
+
+def page_accueil():
+    st.title("🏥 Générateur Documents ESPC")
+    st.caption(
+        "Conforme à la Grille d'Évaluation des Établissements Sanitaires de Premier Contact"
+    )
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+        ### 📄 17 documents prêts à l'emploi
+        - PV Réunions (Mensuelle, COGES, AG)
+        - Rapports (Supervision ASC, Plaintes, Formation)
+        - Fiches (Poste, Nomination)
+        - Calendriers (Nettoyage, Réunions)
+        - Plans (Action, Supervision ASC)
+        - Grilles, Listes et Notes de Service
+
+        **Tous conformes à la grille ESPC**
+        """)
+
+    st.markdown("---")
+    st.caption(
+        "⚙️ Personnalisez vos modèles | 📥 Export Word | 👁️ Aperçu avant téléchargement"
+    )
+    st.caption("**CSR NAGNENEFOUN** — District Sanitaire de KORHOGO 1 — Région du PORO")
+
 
 # =============================================================================
 # INTERFACE PRINCIPALE
 # =============================================================================
 
+
 def main():
-    # =============================================================================
-    # PAGE D'ACCUEIL
-    # =============================================================================
-    if "page" not in st.session_state:
-        st.session_state.page = "accueil"
+    sidebar_chat_widget()
 
-    # CSS responsive pour mobile
-    st.markdown("""
-    <style>
-        /* Réduction générale sur mobile */
-        @media (max-width: 768px) {
-            /* Titres plus petits */
-            h1 { font-size: 1.5rem !important; }
-            h2 { font-size: 1.2rem !important; }
-            h3 { font-size: 1rem !important; }
-            /* Sidebar navigation compacte */
-            section[data-testid="stSidebar"] .stButton button {
-                font-size: 0.8rem !important;
-                padding: 6px 10px !important;
-            }
-            section[data-testid="stSidebar"] h3 {
-                font-size: 0.9rem !important;
-            }
-            /* Boutons principaux */
-            .stButton button {
-                font-size: 0.85rem !important;
-                padding: 8px 12px !important;
-            }
-            /* Colonnes empilées */
-            div[data-testid="column"] {
-                min-width: 100% !important;
-                margin-bottom: 10px;
-            }
-            /* Inputs et selects */
-            input, select, textarea {
-                font-size: 16px !important; /* évite zoom sur iOS */
-            }
-            /* Tableaux responsive avec scroll */
-            table {
-                font-size: 10px !important;
-                max-width: 100% !important;
-            }
-            td, th {
-                padding: 3px 4px !important;
-            }
-            /* Expand/collapse plus compacts */
-            .streamlit-expanderHeader {
-                font-size: 0.85rem !important;
-                padding: 8px 12px !important;
-            }
-            /* Espacement réduit */
-            .stMarkdown, .stText {
-                margin-bottom: 8px !important;
-            }
-            .st-emotion-cache-1y4p8pa {
-                padding: 1rem 0.5rem !important;
-            }
-            /* Bouton téléchargement */
-            .stDownloadButton button {
-                font-size: 0.8rem !important;
-                padding: 6px 10px !important;
-            }
-            /* Success/warning messages */
-            .stAlert {
-                font-size: 0.85rem !important;
-                padding: 8px !important;
-            }
+    pg = st.navigation(
+        {
+            "🏠 Menu": [
+                st.Page(page_accueil, title="Accueil", icon="🏠", default=True),
+                st.Page(page_generateur, title="Générateur de documents", icon="📄"),
+                st.Page(page_templates_rapides, title="Templates Rapides", icon="⚡"),
+                st.Page(page_guide, title="Guide Cahiers / Registres", icon="📋"),
+            ],
+            "💬 Assistant": [
+                st.Page(page_chatbot, title="Assistant ESPC", icon="💬"),
+            ],
+            "👥 Personnel": [
+                st.Page(afficher_page_planning, title="Planning Personnel", icon="🏥"),
+                st.Page(afficher_page_personnel, title="Gestion Personnel", icon="👥"),
+            ],
         }
-        @media (max-width: 480px) {
-            h1 { font-size: 1.2rem !important; }
-            .st-emotion-cache-1y4p8pa { padding: 0.5rem 0.3rem !important; }
-            div[data-testid="stSidebarNav"] { display: none !important; }
-        }
-        /* Sidebar fixe sur desktop, fine sur mobile */
-        section[data-testid="stSidebar"] {
-            min-width: 200px !important;
-        }
-        @media (max-width: 768px) {
-            section[data-testid="stSidebar"] {
-                min-width: 100% !important;
-            }
-            section[data-testid="stSidebar"] > div {
-                padding: 8px !important;
-            }
-        }
-    </style>
-    """, unsafe_allow_html=True)
+    )
+    pg.run()
 
-    # Boutons de navigation dans la sidebar (toujours visibles)
-    with st.sidebar:
-        st.markdown("### 🏠 Navigation")
-        pages = {
-            "accueil": "🏠 Accueil",
-            "generateur": "📄 Générateur de documents",
-            "planning": "🏥 Planning Personnel",
-            "templates_rapides": "⚡ Templates Rapides",
-            "guide": "📋 Guide Cahiers / Registres"
-        }
-        for key, label in pages.items():
-            if st.button(label, use_container_width=True, 
-                         type="primary" if st.session_state.page == key else "secondary"):
-                st.session_state.page = key
-                st.rerun()
-        st.markdown("---")
 
-    if st.session_state.page == "accueil":
-        st.markdown("""
-        <div style="text-align: center; padding: 40px 20px;">
-            <h1 style="font-size: 3rem; margin-bottom: 5px;">🏥 Générateur Documents ESPC</h1>
-            <p style="font-size: 1.2rem; color: #666; margin-bottom: 30px;">
-                Conforme à la Grille d'Évaluation des Établissements Sanitaires de Premier Contact
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+def page_templates_rapides():
+    st.title("⚡ TEMPLATES RAPIDES")
+    st.caption(
+        "Documents pré-remplis CSR NAGNENEFOUN — Imprimez et complétez le nom + la date manuellement"
+    )
+    st.markdown("---")
 
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.markdown("""
-            ### 📄 17 documents prêts à l'emploi
-            - PV Réunions (Mensuelle, COGES, AG)
-            - Rapports (Supervision ASC, Plaintes, Formation)
-            - Fiches (Poste, Nomination)
-            - Calendriers (Nettoyage, Réunions)
-            - Plans (Action, Supervision ASC)
-            - Grilles, Listes et Notes de Service
-
-            **Tous conformes à la grille ESPC**
-            """)
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚀 ACCÉDER AU GÉNÉRATEUR", type="primary", use_container_width=True):
-                st.session_state.page = "generateur"
-                st.rerun()
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("⚡ TEMPLATES RAPIDES (prêts à imprimer)", type="secondary", use_container_width=True):
-                st.session_state.page = "templates_rapides"
-                st.rerun()
-
-        st.markdown("---")
-        st.markdown("""
-        <div style="text-align: center; color: #888; font-size: 0.9rem;">
-            <p>⚙️ Personnalisez vos modèles | 📥 Export Word | 👁️ Aperçu avant téléchargement</p>
-            <p><strong>CSR NAGNENEFOUN</strong> — District Sanitaire de KORHOGO 1 — Région du PORO</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    elif st.session_state.page == "planning":
-        afficher_page_planning()
-
-    elif st.session_state.page == "templates_rapides":
-        st.markdown("<h1 style='text-align: center;'>⚡ TEMPLATES RAPIDES</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #666; font-size: 1.1rem;'>Documents pré-remplis CSR NAGNENEFOUN — Imprimez et complétez le nom + la date manuellement</p>", unsafe_allow_html=True)
-        st.markdown("---")
-
-        rapides = [
-            ("👨‍⚕️", "Fiche de Poste - Chef de Centre", "Chef de Centre CSR - Missions, qualifications, responsabilités", """RÉPUBLIQUE DE CÔTE D'IVOIRE
+    rapides = [
+        (
+            "👨‍⚕️",
+            "Fiche de Poste - Chef de Centre",
+            "Chef de Centre CSR - Missions, qualifications, responsabilités",
+            """RÉPUBLIQUE DE CÔTE D'IVOIRE
 Union – Discipline – Travail
 MINISTÈRE DE LA SANTÉ, HYGIÈNE PUBLIQUE ET CMU
 RÉGION SANITAIRE DU PORO - DISTRICT KORHOGO 1
@@ -1832,8 +2205,13 @@ III. QUALIFICATIONS
 
 IV. SIGNATURE
 Cachet et Signature du Chef de Centre:
-Date: ____/____/______"""),
-            ("👩‍⚕️", "Fiche de Poste - Major / Sage-Femme", "Major/SF - Maternité, CPN, accouchements", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Date: ____/____/______""",
+        ),
+        (
+            "👩‍⚕️",
+            "Fiche de Poste - Major / Sage-Femme",
+            "Major/SF - Maternité, CPN, accouchements",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Major / Sage-Femme Diplômé(e) d'État
@@ -1853,8 +2231,13 @@ III. QUALIFICATIONS
 - Inscription Ordre national
 - Expérience 2 ans minimum
 
-Signature: ____/____/______"""),
-            ("🩺", "Fiche de Poste - IDE", "Infirmier - Consultations, soins, PEV", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Signature: ____/____/______""",
+        ),
+        (
+            "🩺",
+            "Fiche de Poste - IDE",
+            "Infirmier - Consultations, soins, PEV",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Infirmier Diplômé d'État (IDE)
@@ -1874,8 +2257,13 @@ III. QUALIFICATIONS
 - DEI (Diplôme d'État d'Infirmier)
 - Inscription Ordre national
 
-Signature: ____/____/______"""),
-            ("🩹", "Fiche de Poste - Aide-Soignant(e)", "Aide-Soignant - Assistance, hygiène", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Signature: ____/____/______""",
+        ),
+        (
+            "🩹",
+            "Fiche de Poste - Aide-Soignant(e)",
+            "Aide-Soignant - Assistance, hygiène",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Aide-Soignant(e)
@@ -1893,8 +2281,13 @@ III. QUALIFICATIONS
 - Certificat d'Aide-Soignant(e)
 - Expérience 1 an minimum
 
-Signature: ____/____/______"""),
-            ("📋", "Fiche de Poste - Agent Administratif", "Secrétaire - Gestion administrative", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Signature: ____/____/______""",
+        ),
+        (
+            "📋",
+            "Fiche de Poste - Agent Administratif",
+            "Secrétaire - Gestion administrative",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Secrétaire / Agent Administratif
@@ -1912,8 +2305,13 @@ III. QUALIFICATIONS
 - BTS Administration / Diplôme de Secrétariat
 - Maîtrise bureautique
 
-Signature: ____/____/______"""),
-            ("🧹", "Fiche de Poste - Agent d'Entretien", "Agent d'entretien - Nettoyage, hygiène", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Signature: ____/____/______""",
+        ),
+        (
+            "🧹",
+            "Fiche de Poste - Agent d'Entretien",
+            "Agent d'entretien - Nettoyage, hygiène",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Agent d'Entretien / Fille de Salle
@@ -1927,8 +2325,13 @@ II. MISSIONS
 3. Entretien du linge
 4. Propreté des sanitaires
 
-Signature: ____/____/______"""),
-            ("🔐", "Fiche de Poste - Gardien", "Gardien/Planton - Sécurité", """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Signature: ____/____/______""",
+        ),
+        (
+            "🔐",
+            "Fiche de Poste - Gardien",
+            "Gardien/Planton - Sécurité",
+            """FICHE DE POSTE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 I. IDENTIFICATION
 Poste: Gardien / Planton
@@ -1941,8 +2344,13 @@ II. MISSIONS
 2. Contrôler les entrées/sorties
 3. Ouvrir et fermer le centre selon les horaires
 
-Signature: ____/____/______"""),
-            ("📝", "Note de Service - Chef de Centre", "Désignation Chef de Centre (Norme 1.01 d)", """RÉPUBLIQUE DE CÔTE D'IVOIRE
+Signature: ____/____/______""",
+        ),
+        (
+            "📝",
+            "Note de Service - Chef de Centre",
+            "Désignation Chef de Centre (Norme 1.01 d)",
+            """RÉPUBLIQUE DE CÔTE D'IVOIRE
 Union – Discipline – Travail
 MSHP-CMU / RÉGION PORO / DISTRICT KORHOGO 1
 CSR NAGNENEFOUN
@@ -1969,8 +2377,13 @@ Le Médecin Chef du District
 
 [Cachet et Signature]
 
-Diffusion: Intéressé(e), District, Archives"""),
-            ("📝", "Note de Service - Point Focal CMU", "Point Focal CMU (Norme 4.03 c)", """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+Diffusion: Intéressé(e), District, Archives""",
+        ),
+        (
+            "📝",
+            "Note de Service - Point Focal CMU",
+            "Point Focal CMU (Norme 4.03 c)",
+            """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 OBJET: Désignation Point Focal CMU
 
@@ -1987,8 +2400,13 @@ Missions: Accueil CMU, enregistrement, complétude registre, transmission Survey
 Fait à CSR NAGNENEFOUN, le ____/____/______
 Le Chef de Centre
 
-[Cachet et Signature]"""),
-            ("📝", "Note de Service - Responsable Hygiène", "Responsable Hygiène (Norme 6.01 a)", """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+[Cachet et Signature]""",
+        ),
+        (
+            "📝",
+            "Note de Service - Responsable Hygiène",
+            "Responsable Hygiène (Norme 6.01 a)",
+            """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 OBJET: Désignation Responsable Hygiène Hospitalière
 
@@ -2005,8 +2423,13 @@ Missions: Supervision hygiène, déchets biomédicaux, formation personnel.
 Fait à CSR NAGNENEFOUN, le ____/____/______
 Le Chef de Centre
 
-[Cachet et Signature]"""),
-            ("📝", "Note de Service - Gestionnaire Pharmacie", "Gestionnaire Médicaments (Norme 11.01 g)", """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
+[Cachet et Signature]""",
+        ),
+        (
+            "📝",
+            "Note de Service - Gestionnaire Pharmacie",
+            "Gestionnaire Médicaments (Norme 11.01 g)",
+            """NOTE DE SERVICE N° ____/MS/RS-PORO/DS-K1/CSR NAGNENEFOUN
 
 OBJET: Désignation Gestionnaire des Médicaments
 
@@ -2023,8 +2446,13 @@ Missions: Gestion stocks, dispensation, commandes, contrôle périmés.
 Fait à CSR NAGNENEFOUN, le ____/____/______
 Le Chef de Centre
 
-[Cachet et Signature]"""),
-            ("📜", "Arrêté - Mise en place COGES", "Arrêté COGES (Norme 1.02 a)", """RÉPUBLIQUE DE CÔTE D'IVOIRE
+[Cachet et Signature]""",
+        ),
+        (
+            "📜",
+            "Arrêté - Mise en place COGES",
+            "Arrêté COGES (Norme 1.02 a)",
+            """RÉPUBLIQUE DE CÔTE D'IVOIRE
 Union – Discipline – Travail
 RÉGION PORO / DISTRICT KORHOGO 1
 
@@ -2051,8 +2479,13 @@ Art.3: Mandat de 3 ans renouvelable.
 Fait à [Lieu], le ____/____/______
 Le Préfet/Sous-Préfet
 
-[Cachet et Signature]"""),
-            ("📜", "Arrêté - Liste Nominative ASC", "Liste officielle ASC (Norme 14.01 a)", """RÉPUBLIQUE DE CÔTE D'IVOIRE
+[Cachet et Signature]""",
+        ),
+        (
+            "📜",
+            "Arrêté - Liste Nominative ASC",
+            "Liste officielle ASC (Norme 14.01 a)",
+            """RÉPUBLIQUE DE CÔTE D'IVOIRE
 Union – Discipline – Travail
 RÉGION PORO / DISTRICT KORHOGO 1
 
@@ -2072,240 +2505,431 @@ N° | Nom & Prénoms | Village | Téléphone
 Fait à KORHOGO 1, le ____/____/______
 Le Médecin Chef du District
 
-[Cachet et Signature]"""),
-        ]
+[Cachet et Signature]""",
+        ),
+    ]
 
-        for icone, titre, desc, contenu in rapides:
-            with st.expander(f"{icone} **{titre}** — {desc}", expanded=False):
-                st.text_area("Contenu du template", contenu, height=200, key=f"rapide_{titre}")
-                doc = creer_document_word(titre, contenu)
-                from io import BytesIO
-                buf = BytesIO()
-                doc.save(buf)
-                buf.seek(0)
-                st.download_button(f"📥 Télécharger {titre} (.docx)", buf, f"{titre}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    for icone, titre, desc, contenu in rapides:
+        with st.expander(f"{icone} **{titre}** — {desc}", expanded=False):
+            st.text_area(
+                "Contenu du template", contenu, height=200, key=f"rapide_{titre}"
+            )
+            doc = creer_document_word(titre, contenu)
+            from io import BytesIO
 
-    elif st.session_state.page == "guide":
-        st.title("📋 Guide des Cahiers / Registres / Outils Physiques")
-        st.markdown("**Références conformes à la Grille ESPC — Contrôle District / Région**")
-        st.markdown("---")
-
-        guide_data = [
-            ("1", "Cahier de présence", "2.01 e", "Renseignement correct : date, nom, fonction, heure arrivée/sortie, signature, absence de saut de ligne"),
-            ("2", "Journal de caisse (cahier brouillard)", "3.01 a", "Existence et tenue à jour"),
-            ("3", "Rapport financier trimestriel de trésorerie", "3.01 b", "Prise en compte de toutes les ressources"),
-            ("4", "États de redevances mensuels", "3.01 c", "Ressources perçues auprès des clients (3 derniers mois)"),
-            ("5", "Ordres de paiement (OP) et liasses", "3.01 d", "Vérification des pièces (factures, PV, bon de commande)"),
-            ("6", "Cahier d'inventaire des produits d'entretien", "6.06 b", "Inventaire mensuel des 3 derniers mois"),
-            ("7", "Fiche de stock (médicaments)", "11.02 a.ii / 12.01", "Disponibilité, concordance avec stock physique, ruptures"),
-            ("8", "Cahier d'inventaire (pharmacie)", "11.02 a.iii", "Inventaire régulier"),
-            ("9", "Cahiers de recettes journalières et de versements", "11.02 a.iv", "Tenue et archivage"),
-            ("10", "Ordonnancier / Facture", "11.02 a.v", "Disponibilité"),
-            ("11", "Registre d'accouchement", "7.02 a, 7.03, 7.08, 8.01 c", "Identification personnel, partogramme, administration médicaments, GATPA, CPoN, décès"),
-            ("12", "Registre CPoN (consultation postnatale)", "7.08 b", "Renseignement complet de tous les items"),
-            ("13", "Registre de consultation curative", "7.03 e, 10.01 a, 12.01", "Prise en charge paludisme, IRA, diarrhée, triangulation stocks"),
-            ("14", "Registre de prise en charge des assurés CMU", "4.03 g", "Complétude, transmission surveyCTO"),
-            ("15", "Cahier de transmission (CMU) au district", "4.03 h", "Bordereaux déchargés"),
-            ("16", "Rapport SIG mensuel", "1.04 d", "Cohérence, corrections apportées"),
-            ("17", "Matrice de cohérence", "1.04 d", "Triangulation avec rapports SIG"),
-            ("18", "Fiche de notification de décès maternel (5 fiches vierges)", "8.01 a", "Disponibilité, bon rangement"),
-            ("19", "Rapport mensuel communautaire des ASC", "8.01 b, 14.01 f", "Disponibilité par mois, concordance"),
-            ("20", "Outils primaires de collecte des données", "8.01 c", "Existence et tenue (registres CPN, soins curatifs, accouchements)"),
-            ("21", "Fiche de stock ASC", "15.01 a", "Disponibilité, à jour"),
-            ("22", "Rapport mensuel d'activité communautaire (par ASC)", "15.01 b", "Disponibilité"),
-        ]
-
-        # Tableau principal
-        cols = st.columns([0.5, 3, 1.5, 4])
-        cols[0].markdown("**N°**")
-        cols[1].markdown("**Désignation du cahier / registre**")
-        cols[2].markdown("**Norme ESPC**")
-        cols[3].markdown("**Ce que le contrôleur vérifie**")
-        st.markdown("---")
-
-        for row in guide_data:
-            with st.container():
-                c1, c2, c3, c4 = st.columns([0.5, 3, 1.5, 4])
-                c1.markdown(f"**{row[0]}**")
-                c2.markdown(row[1])
-                c3.markdown(f"`{row[2]}`")
-                c4.markdown(row[3])
-            st.markdown("---")
-
-        st.markdown("## 📂 Récapitulatif par service")
-        st.markdown("---")
-
-        recap_sections = [
-            ("💼 Gestion / Administration", [
-                "Cahier de présence",
-                "Journal de caisse (brouillard)",
-                "États de redevances",
-                "Ordres de paiement et liasses",
-                "Rapports financiers",
-                "Fiches de stock (pharmacie)",
-                "Cahier d'inventaire (pharmacie)",
-                "Cahiers de recettes journalières",
-                "Ordonnancier",
-            ]),
-            ("👶 Maternité / SONU", [
-                "Registre d'accouchement",
-                "Registre CPoN",
-                "Registre de consultation curative",
-                "Fiche de notification décès maternel",
-            ]),
-            ("🆔 CMU", [
-                "Registre de prise en charge des assurés CMU",
-                "Cahier de transmission CMU",
-            ]),
-            ("🏘️ Communautaire (ASC)", [
-                "Rapport mensuel communautaire (ESPC)",
-                "Fiche de stock ASC",
-                "Rapport mensuel d'activité de chaque ASC",
-            ]),
-            ("🧹 Hygiène", [
-                "Cahier d'inventaire des produits d'entretien",
-            ]),
-        ]
-
-        tab_labels = [s[0] for s in recap_sections]
-        tabs = st.tabs(tab_labels)
-
-        for i, (title, items) in enumerate(recap_sections):
-            with tabs[i]:
-                for item in items:
-                    st.markdown(f"- ✅ {item}")
-                st.markdown("")
-                st.info(f"**{len(items)}** cahier(s)/registre(s) à vérifier dans ce service")
-
-    elif st.session_state.page == "generateur":
-        # =============================================================================
-        # GÉNÉRATEUR DE DOCUMENTS
-        # =============================================================================
-        st.title("🏥 Générateur Documents ESPC")
-        st.markdown("**Conforme à la Grille ESPC**")
-
-        # =============================================================================
-        # SECTION PERSONNALISATION DES TEMPLATES
-        # =============================================================================
-        with st.expander("⚙️ Personnaliser les templates"):
-            st.markdown("### Modifier la structure des documents")
-
-            # Choisir quel document modifier
-            template_options = list(templates.keys()) if templates else []
-            template_noms = {k: templates[k]["nom"] for k in template_options} if templates else {}
-            template_choice = st.selectbox(
-                "Choisir le document à modifier",
-                template_options,
-                format_func=lambda x: template_noms.get(x, x)
+            buf = BytesIO()
+            doc.save(buf)
+            buf.seek(0)
+            st.download_button(
+                f"📥 Télécharger {titre} (.docx)",
+                buf,
+                f"{titre}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
-            if template_choice and templates:
-                st.markdown(f"#### 📄 {templates[template_choice]['nom']}")
 
-                # Afficher les sections actuelles
-                sections_actuelles = templates[template_choice]["sections"]
+def page_guide():
+    st.title("📋 Guide Stratégique ESPC")
+    st.caption(
+        "Tout ce que le Chef de Centre doit préparer — Conforme à la Grille 1600 pts"
+    )
+    st.divider()
 
-                # Modifier les sections
-                sections_text = st.text_area(
-                    "Sections (une par ligne)",
-                    value="\n".join(sections_actuelles),
-                    height=150
-                )
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "👤 Désignations",
+        "📝 Notes de Service",
+        "📒 Cahiers/Registres",
+        "📊 Rapports",
+        "🖼️ Affichage",
+        "📅 Planification",
+    ])
 
-                # Convertir en liste
-                nouvelles_sections = [s.strip() for s in sections_text.split("\n") if s.strip()]
+    # =========================================================================
+    # TAB 1: DÉSIGNATIONS
+    # =========================================================================
+    with tab1:
+        st.markdown("### 👤 Désignations et Nominations")
+        st.info("Chaque désignation nécessite une **Note de Service** ou un **Arrêté**. Générables via l'app.")
 
-                # Bouton pour sauvegarder
-                if st.button("💾 Sauvegarder les modifications"):
-                    templates[template_choice]["sections"] = nouvelles_sections
-                    sauvegarder_templates(templates)
-                    st.success(f"✅ Template '{templates[template_choice]['nom']}' mis à jour!")
-                    st.rerun()
+        nominations = [
+            ("1.01 d", "Chef de Centre", "Note de service", "DD KORHOGO 1"),
+            ("1.01 d", "Responsable de chaque service", "Note de service", "Responsable ESPC"),
+            ("1.02 a", "Membres du COGES (7 membres)", "Arrêté préfectoral", "Préfet/Sous-Préfet"),
+            ("4.03 c", "Point Focal CMU", "Note de service", "Responsable ESPC"),
+            ("4.02 b", "Agent d'accueil et orientation", "Fiche de poste signée", "Responsable ESPC"),
+            ("6.01 a", "Responsable Hygiène Hospitalière", "Note de service", "Responsable ESPC"),
+            ("6.05 a", "Responsable Déchets Biomédicaux", "Note de service", "Responsable ESPC"),
+            ("11.01 g", "Gestionnaire Pharmacie", "Note + fiche de poste", "Responsable ESPC"),
+            ("7.02 a", "Personnel qualifié accouchements", "Fiche de poste signée", "Responsable ESPC"),
+            ("2.01 b", "Tout agent (fiche de poste)", "Fiche de poste signée", "Responsable ESPC"),
+            ("14.01 a", "Liste ASC nominative", "Liste officielle", "District sanitaire"),
+            ("14.01 c", "Grille supervision ASC", "Grille signée", "ASC + Superviseur"),
+        ]
 
-                # Bouton pour réinitialiser
-                if st.button("↩️ Réinitialiser"):
-                    # Recréer le fichier original
-                    sauvegarder_templates(templates)
-                    st.success("Template réinitialisé!")
-                    st.rerun()
+        for n in nominations:
+            st.markdown(f"**`{n[0]}`** {n[1]}")
+            st.caption(f"📄 {n[2]} — ✍️ {n[3]}")
 
-        st.markdown("---")
+        st.success(f"**{len(nominations)} désignations** — Utilisez l'onglet Fiche de Nomination ou Templates Rapides")
 
-        doc_options = [d[0] for d in DOCUMENTS_LIST]
-        type_doc = st.selectbox("📄 Choisir le document", doc_options)
+    # =========================================================================
+    # TAB 2: NOTES DE SERVICE
+    # =========================================================================
+    with tab2:
+        st.markdown("### 📝 Notes de Service à rédiger")
+        st.info("Format officiel: **RÉPUBLIQUE DE CÔTE D'IVOIRE → MSHP → Région → District → CSR**")
 
-        doc_key = None
-        for name, key in DOCUMENTS_LIST:
-            if name == type_doc:
-                doc_key = key
-                break
+        notes = [
+            ("1.01 d", "Désignation du Chef de Centre", "DD KORHOGO 1"),
+            ("1.01 d", "Désignation Responsables de service", "Responsable ESPC"),
+            ("4.03 c", "Désignation Point Focal CMU", "Responsable ESPC"),
+            ("6.01 a", "Désignation Responsable Hygiène", "Responsable ESPC"),
+            ("6.05 a", "Désignation Responsable Déchets", "Responsable ESPC"),
+            ("11.01 g", "Désignation Gestionnaire Pharmacie", "Responsable ESPC"),
+            ("1.03 c", "Diffusion PV réunion aux chefs de service", "Responsable ESPC"),
+            ("2.01 c", "Affichage planning mensuel", "Responsable ESPC"),
+            ("2.01 d", "Affichage programme de gardes", "Responsable ESPC"),
+            ("6.01 b", "Procédures d'hygiène", "Responsable Hygiène"),
+        ]
 
-        st.markdown("---")
+        for n in notes:
+            st.markdown(f"- **`{n[0]}`** {n[1]} → ✍️ {n[2]}")
 
-        # Sélecteur de thème principal (uniquement pour les PV et rapports d'activités)
-        docs_avec_themes = ["pv_reunion_mensuelle", "pv_coges", "pv_ag", "rapport_supervision_asc", "rapport_plaintes", "rapport_formation"]
+        st.success(f"**{len(notes)} notes de service** — Générables via Générateur > Note de Service")
 
-        theme_principal = ""
-        if doc_key in docs_avec_themes:
-            st.markdown("### 🎯 Thème principal")
-            themes_disponibles = [
-                "Santé maternelle (CPN, accouchements, PF, PTME)",
-                "Santé infantile (PEV, croissance, malnutrition)",
-                "Paludisme (dépistage, traitement, prévention)",
-                "Hygiène et infection",
-                "Gouvernance (réunions, COGES)",
-                "Surveillance épidémiologique",
-                "Pharmacie et médicaments",
-                "Nutrition",
-                "IEC/CCC (sensibilisation)",
-                "Activités communautaires (ASC)",
-                "Gestion des équipements",
-                "Rapports et données"
+    # =========================================================================
+    # TAB 3: CAHIERS/REGISTRES
+    # =========================================================================
+    with tab3:
+        st.markdown("### 📒 Cahiers et Registres à tenir à jour")
+        st.info("Le contrôleur vérifie: **existence**, **conformité** et **tenue à jour**")
+
+        cahiers = [
+            ("Gestion", [
+                ("2.01 e", "Cahier de présence", "Date, nom, heure, signature, pas de saut"),
+            ]),
+            ("Finance", [
+                ("3.01 a", "Journal de caisse (brouillard)", "Tenue à jour"),
+                ("3.01 b", "Rapport financier trimestriel", "Toutes les ressources"),
+                ("3.01 c", "États de redevances mensuels", "3 derniers mois"),
+                ("3.01 d", "Ordres de paiement et liasses", "Factures, PV, bons"),
+                ("11.02 a.iv", "Cahiers recettes journalières", "Tenue et archivage"),
+            ]),
+            ("Pharmacie", [
+                ("11.02 a.ii", "Fiche de stock médicaments", "Concordance, ruptures"),
+                ("11.02 a.iii", "Cahier inventaire pharmacie", "Inventaire régulier"),
+                ("11.02 a.v", "Ordonnancier / Facture", "Disponibilité"),
+            ]),
+            ("Maternité", [
+                ("7.02 a", "Registre d'accouchement", "Partogramme, médicaments, GATPA"),
+                ("7.08 b", "Registre CPoN", "Tous les items complétés"),
+                ("8.01 a", "Fiche notification décès maternel", "5 fiches vierges disponibles"),
+            ]),
+            ("Consultation", [
+                ("7.03 e", "Registre consultation curative", "Paludisme, IRA, diarrhée"),
+            ]),
+            ("CMU", [
+                ("4.03 g", "Registre prise en charge CMU", "Complétude, surveyCTO"),
+                ("4.03 h", "Cahier transmission CMU", "Bordereaux déchargés"),
+            ]),
+            ("SIG", [
+                ("1.04 d", "Rapport SIG mensuel", "Cohérence, corrections"),
+                ("1.04 d", "Matrice de cohérence", "Triangulation SIG"),
+            ]),
+            ("Communautaire", [
+                ("14.01 f", "Rapport mensuel communautaire ASC", "Par mois, concordance"),
+                ("15.01 a", "Fiche stock ASC", "À jour"),
+                ("15.01 b", "Rapport activités communautaires", "Par ASC"),
+            ]),
+            ("Hygiène", [
+                ("6.06 b", "Cahier inventaire produits entretien", "3 derniers mois"),
+            ]),
+        ]
+
+        for service, items in cahiers:
+            st.markdown(f"#### {service}")
+            for item in items:
+                st.markdown(f"- **`{item[0]}`** {item[1]} — _{item[2]}_")
+
+        total = sum(len(items) for _, items in cahiers)
+        st.success(f"**{total} cahiers/registres** à vérifier")
+
+    # =========================================================================
+    # TAB 4: RAPPORTS
+    # =========================================================================
+    with tab4:
+        st.markdown("### 📊 Rapports à produire")
+        st.info("Ces rapports doivent être produits régulièrement et archivés")
+
+        rapports = [
+            ("1.01", "PAA budgétisé", "Annuel", "Chef de Centre"),
+            ("1.01 g", "Revue trimestrielle PAA", "Trimestriel", "Chef de Centre"),
+            ("1.02 b", "PV Réunion COGES", "Trimestriel", "Secrétaire COGES"),
+            ("1.03", "PV Assemblée Générale", "Annuel", "Président COGES"),
+            ("1.04 b", "Rapport Formation Personnel", "Trimestriel", "Major"),
+            ("1.04 d", "Rapport SIG Mensuel", "Mensuel", "Point Focal SIG"),
+            ("4.02", "Rapport Plaintes/Suggestions", "Trimestriel", "Agent Accueil"),
+            ("6.05", "Rapport Infections Nosocomiales", "Trimestriel", "Resp. Hygiène"),
+            ("8.01 b", "Rapport Communautaire ASC", "Mensuel", "Chargé Programme"),
+            ("14.01 d", "Rapport Supervision ASC", "Mensuel", "Superviseur ASC"),
+            ("15.01 b", "Rapport Activités Communautaires", "Mensuel", "Chargé Programme"),
+        ]
+
+        for r in rapports:
+            st.markdown(f"**`{r[0]}`** {r[1]}")
+            st.caption(f"📅 {r[2]} — ✍️ {r[3]}")
+
+        st.success(f"**{len(rapports)} rapports** — La plupart générables via l'onglet Générateur (IA)")
+
+    # =========================================================================
+    # TAB 5: AFFICHAGE
+    # =========================================================================
+    with tab5:
+        st.markdown("### 🖼️ Documents à afficher")
+        st.info("Ces documents doivent être **visibles** dans le centre lors de l'évaluation")
+
+        affichage = [
+            ("1.01", "Plan d'Action Annuel (PAA)", "Tableau d'affichage"),
+            ("1.02", "Arrêté COGES", "Tableau d'affichage"),
+            ("1.02 b", "PV réunion COGES trimestre précédent", "Tableau d'affichage"),
+            ("1.03", "PV réunion mensuelle personnel", "Tableau d'affichage"),
+            ("2.01 c", "Planning mensuel de travail", "Tableau d'affichage"),
+            ("2.01 d", "Programme gardes et astreintes", "Tableau d'affichage"),
+            ("2.01 e", "Cahier de présence", "Point d'entrée"),
+            ("4.03", "Liste tarifs et prestations CMU", "Accueil / Hall"),
+            ("6.01", "Procédures d'hygiène", "Chaque salle de soins"),
+            ("6.05", "Plan gestion déchets biomédicaux", "Zone de tri"),
+            ("7.04", "Protocoles SONU", "Salle d'accouchement"),
+            ("14.01", "Liste nominative ASC", "Bureau Chef Centre"),
+        ]
+
+        for a in affichage:
+            st.markdown(f"- **`{a[0]}`** {a[1]} → 📍 {a[2]}")
+
+        st.success(f"**{len(affichage)} documents** à afficher")
+
+    # =========================================================================
+    # TAB 6: PLANIFICATION
+    # =========================================================================
+    with tab6:
+        st.markdown("### 📅 Planification annuelle")
+        st.info("Documents de planification stratégique à produire")
+
+        planification = [
+            ("1.01", "Plan d'Action Annuel (PAA) budgétisé", "Annuel"),
+            ("1.01 g", "Revue trimestrielle du PAA (×4)", "Trimestriel"),
+            ("1.04 b", "Plan de Formation Continue", "Annuel"),
+            ("6.01", "Calendrier de Nettoyage du centre", "Annuel"),
+            ("14.01 b", "Plan de supervision annuel ASC", "Annuel"),
+        ]
+
+        for p in planification:
+            st.markdown(f"- **`{p[0]}`** {p[1]} ({p[2]})")
+
+        st.success(f"**{len(planification)} documents** de planification — Générables via l'IA")
+
+    # =========================================================================
+    # RÉCAPITULATIF
+    # =========================================================================
+    st.divider()
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("👤 Désignations", "12")
+    c2.metric("📝 Notes de Service", "10")
+    c3.metric("📒 Cahiers/Registres", "25")
+    c4.metric("📊 Rapports", "11")
+
+    st.divider()
+    st.caption("**CSR NAGNENEFOUN** — Guide stratégique ESPC — Conforme à la Grille 1600 pts")
+
+
+def page_generateur():
+    st.title("🏥 Générateur Documents ESPC")
+    st.markdown("**Conforme à la Grille ESPC**")
+
+    # =============================================================================
+    # SECTION PERSONNALISATION DES TEMPLATES
+    # =============================================================================
+    with st.expander("⚙️ Personnaliser les templates"):
+        st.markdown("### Modifier la structure des documents")
+
+        # Choisir quel document modifier
+        template_options = list(templates.keys()) if templates else []
+        template_noms = (
+            {k: templates[k]["nom"] for k in template_options} if templates else {}
+        )
+        template_choice = st.selectbox(
+            "Choisir le document à modifier",
+            template_options,
+            format_func=lambda x: template_noms.get(x, x),
+        )
+
+        if template_choice and templates:
+            st.markdown(f"#### 📄 {templates[template_choice]['nom']}")
+
+            # Afficher les sections actuelles
+            sections_actuelles = templates[template_choice]["sections"]
+
+            # Modifier les sections
+            sections_text = st.text_area(
+                "Sections (une par ligne)",
+                value="\n".join(sections_actuelles),
+                height=150,
+            )
+
+            # Convertir en liste
+            nouvelles_sections = [
+                s.strip() for s in sections_text.split("\n") if s.strip()
             ]
-            theme_principal = st.selectbox(
-                "Choisir le thème principal du document",
-                themes_disponibles
-            )
 
-        st.markdown("---")
+            # Bouton pour sauvegarder
+            if st.button("💾 Sauvegarder les modifications"):
+                templates[template_choice]["sections"] = nouvelles_sections
+                sauvegarder_templates(templates)
+                st.success(
+                    f"✅ Template '{templates[template_choice]['nom']}' mis à jour!"
+                )
+                st.rerun()
 
-        if doc_key:
-            donnees = get_form_fields(doc_key)
-            # Ajouter le contexte du CSR aux données
-            donnees["contexte"] = get_contexte_csr()
-            # Ajouter les thèmes sélectionnés
-            if theme_principal:
-                donnees["themes"] = f"- {theme_principal}"
-            else:
-                donnees["themes"] = ""
+            # Bouton pour réinitialiser
+            if st.button("↩️ Réinitialiser"):
+                # Recréer le fichier original
+                sauvegarder_templates(templates)
+                st.success("Template réinitialisé!")
+                st.rerun()
 
-            # Dossier de sauvegarde (répertoire de l'application)
-            dossier_sortie = os.path.join(os.path.dirname(os.path.abspath(__file__)), "documents_generes")
-            if not os.path.exists(dossier_sortie):
-                os.makedirs(dossier_sortie)
+    st.markdown("---")
 
-        st.markdown("---")
+    doc_options = [d[0] for d in DOCUMENTS_LIST]
+    type_doc = st.selectbox("📄 Choisir le document", doc_options)
 
-        if st.button("🚀 Générer le document", type="primary"):
-            with st.spinner("Génération en cours..."):
-                # Cas spécial: Liste Personnel Centre (statique, sans IA)
-                if doc_key == "liste_personnel_centre":
-                    personnel_data = [
-                        ("1", "Kouassi Yao", "Chef de Centre", "0102030401", "Infirmerie"),
-                        ("2", "Koné Abibata", "Major / Sage-femme", "0102030402", "Maternité"),
-                        ("3", "Touré Fatoumata", "Chargée PEV", "0102030403", "PEV"),
-                        ("4", "Koffi Aka", "Chargé Paludisme", "0102030404", "Consultation"),
-                        ("5", "N'Guessan Kouamé", "Chargé VIH/PTME", "0102030405", "VIH"),
-                        ("6", "Kouakou Akissi", "Chargée CPN", "0102030406", "Maternité"),
-                        ("7", "Bamba Sékou", "Chargé Pharmacie", "0102030407", "Pharmacie"),
-                        ("8", "Kra Adjo", "Agent d'entretien", "0102030408", "Nettoyage"),
-                        ("9", "Dibi Franck", "Planton", "0102030409", "Accueil"),
-                        ("10", "Kouamé Bertine", "Secrétaire", "0102030410", "Secrétariat"),
-                        ("11", "Gnahoua Olivier", "Gardien", "0102030411", "Sécurité"),
-                        ("12", "Konan Blanche", "ASC", "0102030412", "Communautaire"),
-                    ]
+    doc_key = None
+    for name, key in DOCUMENTS_LIST:
+        if name == type_doc:
+            doc_key = key
+            break
 
-                    contenu = f"""LISTE DU PERSONNEL DU CSR NAGNENEFOUN
+    st.markdown("---")
+
+    # Sélecteur de thème principal (uniquement pour les PV et rapports d'activités)
+    docs_avec_themes = [
+        "pv_reunion_mensuelle",
+        "pv_coges",
+        "pv_ag",
+        "rapport_supervision_asc",
+        "rapport_plaintes",
+        "rapport_formation",
+    ]
+
+    theme_principal = ""
+    if doc_key in docs_avec_themes:
+        st.markdown("### 🎯 Thème principal")
+        themes_disponibles = [
+            "Santé maternelle (CPN, accouchements, PF, PTME)",
+            "Santé infantile (PEV, croissance, malnutrition)",
+            "Paludisme (dépistage, traitement, prévention)",
+            "Hygiène et infection",
+            "Gouvernance (réunions, COGES)",
+            "Surveillance épidémiologique",
+            "Pharmacie et médicaments",
+            "Nutrition",
+            "IEC/CCC (sensibilisation)",
+            "Activités communautaires (ASC)",
+            "Gestion des équipements",
+            "Rapports et données",
+        ]
+        theme_principal = st.selectbox(
+            "Choisir le thème principal du document", themes_disponibles
+        )
+
+    st.markdown("---")
+
+    if doc_key:
+        donnees = get_form_fields(doc_key)
+        # Ajouter le contexte du CSR aux données
+        donnees["contexte"] = get_contexte_csr()
+        # Ajouter les thèmes sélectionnés
+        if theme_principal:
+            donnees["themes"] = f"- {theme_principal}"
+        else:
+            donnees["themes"] = ""
+
+        # Dossier de sauvegarde (répertoire de l'application)
+        dossier_sortie = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "documents_generes"
+        )
+        if not os.path.exists(dossier_sortie):
+            os.makedirs(dossier_sortie)
+
+    st.markdown("---")
+
+    if st.button("🚀 Générer le document", type="primary"):
+        with st.spinner("Génération en cours..."):
+            # Cas spécial: Liste Personnel Centre (statique, sans IA)
+            if doc_key == "liste_personnel_centre":
+                personnel_data = [
+                    (
+                        "1",
+                        "Kouassi Yao",
+                        "Chef de Centre",
+                        "0102030401",
+                        "Infirmerie",
+                    ),
+                    (
+                        "2",
+                        "Koné Abibata",
+                        "Major / Sage-femme",
+                        "0102030402",
+                        "Maternité",
+                    ),
+                    ("3", "Touré Fatoumata", "Chargée PEV", "0102030403", "PEV"),
+                    (
+                        "4",
+                        "Koffi Aka",
+                        "Chargé Paludisme",
+                        "0102030404",
+                        "Consultation",
+                    ),
+                    (
+                        "5",
+                        "N'Guessan Kouamé",
+                        "Chargé VIH/PTME",
+                        "0102030405",
+                        "VIH",
+                    ),
+                    (
+                        "6",
+                        "Kouakou Akissi",
+                        "Chargée CPN",
+                        "0102030406",
+                        "Maternité",
+                    ),
+                    (
+                        "7",
+                        "Bamba Sékou",
+                        "Chargé Pharmacie",
+                        "0102030407",
+                        "Pharmacie",
+                    ),
+                    (
+                        "8",
+                        "Kra Adjo",
+                        "Agent d'entretien",
+                        "0102030408",
+                        "Nettoyage",
+                    ),
+                    ("9", "Dibi Franck", "Planton", "0102030409", "Accueil"),
+                    (
+                        "10",
+                        "Kouamé Bertine",
+                        "Secrétaire",
+                        "0102030410",
+                        "Secrétariat",
+                    ),
+                    ("11", "Gnahoua Olivier", "Gardien", "0102030411", "Sécurité"),
+                    ("12", "Konan Blanche", "ASC", "0102030412", "Communautaire"),
+                ]
+
+                contenu = f"""LISTE DU PERSONNEL DU CSR NAGNENEFOUN
 
     I. EN-TÊTE OFFICIEL
     RÉPUBLIQUE DE CÔTE D'IVOIRE
@@ -2313,15 +2937,15 @@ Le Médecin Chef du District
     MINISTÈRE DE LA SANTÉ
     RÉGION SANITAIRE DU PORO
     DISTRICT SANITAIRE DE KORHOGO 1
-    {donnees.get('nom_etablissement', 'CSR NAGNENEFOUN')}
+    {donnees.get("nom_etablissement", "CSR NAGNENEFOUN")}
 
     II. LISTE DU PERSONNEL (TABLEAU)
     N° | Nom & Prénoms | Fonction | Contact | Service"""
 
-                    for row in personnel_data:
-                        contenu += f"\n| {' | '.join(row)} |"
+                for row in personnel_data:
+                    contenu += f"\n| {' | '.join(row)} |"
 
-                    contenu += f"""
+                contenu += f"""
 
     III. RÉCAPITULATIF
     - Effectif total: 12 agents
@@ -2332,51 +2956,54 @@ Le Médecin Chef du District
     - Secrétaire: 1
 
     IV. OBSERVATIONS
-    - Cette liste est établie pour l'année {donnees.get('periode', '2026')}
+    - Cette liste est établie pour l'année {donnees.get("periode", "2026")}
     - Tout changement de personnel doit être signalé au District Sanitaire de KORHOGO 1
 
     V. APPROBATION
     - Vu par le Chef de Centre:
-    - Date: ____/____/{donnees.get('periode', '2026')}
+    - Date: ____/____/{donnees.get("periode", "2026")}
     - Cachet et signature:
     """
-                    meta = {
-                        "Établissement": donnees.get("nom_etablissement", ""),
-                        "Période": donnees.get("periode", "")
-                    }
-                    doc = creer_document_word(type_doc, contenu, meta)
+                meta = {
+                    "Établissement": donnees.get("nom_etablissement", ""),
+                    "Période": donnees.get("periode", ""),
+                }
+                doc = creer_document_word(type_doc, contenu, meta)
 
-                    from io import BytesIO
-                    buffer = BytesIO()
-                    doc.save(buffer)
-                    buffer.seek(0)
+                from io import BytesIO
 
-                    # Sauvegarder dans le dossier
-                    nom_fichier = f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx"
-                    chemin_fichier = os.path.join(dossier_sortie, nom_fichier)
-                    with open(chemin_fichier, "wb") as f:
-                        f.write(buffer.getvalue())
+                buffer = BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
 
-                    st.success(f"✅ Document généré! Sauvegardé dans: documents_generes/")
+                # Sauvegarder dans le dossier
+                nom_fichier = (
+                    f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx"
+                )
+                chemin_fichier = os.path.join(dossier_sortie, nom_fichier)
+                with open(chemin_fichier, "wb") as f:
+                    f.write(buffer.getvalue())
 
-                    st.download_button(
-                        "📥 Télécharger",
-                        buffer,
-                        f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx",
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    )
+                st.success(f"✅ Document généré! Sauvegardé dans: documents_generes/")
 
-                    with st.expander("👁️ Aperçu"):
-                        st.text(contenu)
+                st.download_button(
+                    "📥 Télécharger",
+                    buffer,
+                    f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
 
-                elif doc_key == "plan_supervision_asc":
-                    contenu = f"""PLAN DE SUPERVISION DES ASC - CSR NAGNENEFOUN - {donnees.get('periode', '2026')}
+                with st.expander("👁️ Aperçu"):
+                    st.text(contenu)
+
+            elif doc_key == "plan_supervision_asc":
+                contenu = f"""PLAN DE SUPERVISION DES ASC - CSR NAGNENEFOUN - {donnees.get("periode", "2026")}
 
     I. CONTEXTE
-    Le présent plan de supervision est établi conformément à la grille ESPC pour encadrer et évaluer les Agents de Santé Communautaires (ASC) rattachés au CSR NAGNENEFOUN. Il couvre les activités de supervision sur le terrain et au centre pour l'année {donnees.get('periode', '2026')}.
+    Le présent plan de supervision est établi conformément à la grille ESPC pour encadrer et évaluer les Agents de Santé Communautaires (ASC) rattachés au CSR NAGNENEFOUN. Il couvre les activités de supervision sur le terrain et au centre pour l'année {donnees.get("periode", "2026")}.
 
-    Établissement: {donnees.get('nom_etablissement', 'CSR NAGNENEFOUN')}
-    Période: {donnees.get('periode', '2026')}
+    Établissement: {donnees.get("nom_etablissement", "CSR NAGNENEFOUN")}
+    Période: {donnees.get("periode", "2026")}
     District: KORHOGO 1 (PORO)
 
     II. OBJECTIFS DE LA SUPERVISION
@@ -2419,82 +3046,1679 @@ Le Médecin Chef du District
 
     VI. AFFICHAGE
     - Lieu d'affichage: Tableau d'affichage du CSR NAGNENEFOUN
-    - Période d'affichage: {donnees.get('periode', '2026')}
+    - Période d'affichage: {donnees.get("periode", "2026")}
     - Responsable de l'affichage: Chef de Centre adjoint
     """
+                meta = {
+                    "Établissement": donnees.get("nom_etablissement", ""),
+                    "Période": donnees.get("periode", ""),
+                }
+                doc = creer_document_word(type_doc, contenu, meta)
+
+                from io import BytesIO
+
+                buffer = BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
+
+                nom_fichier = (
+                    f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx"
+                )
+                chemin_fichier = os.path.join(dossier_sortie, nom_fichier)
+                with open(chemin_fichier, "wb") as f:
+                    f.write(buffer.getvalue())
+
+                st.success(f"✅ Document généré! Sauvegardé dans: documents_generes/")
+
+                st.download_button(
+                    "📥 Télécharger",
+                    buffer,
+                    f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+
+                with st.expander("👁️ Aperçu"):
+                    st.text(contenu)
+
+            else:
+                prompts = PROMPTS.get(doc_key)
+
+                if prompts:
+                    sections = get_sections_template(doc_key)
+                    sections_str = "\n".join([f"I. {s}" for s in sections])
+
+                    # Ajouter les sections aux données
+                    donnees["sections"] = sections_str
+
+                user_prompt = prompts["user"].format(**donnees)
+                contenu = generer_avec_groq(prompts["system"], user_prompt)
+
+                if "Erreur" in contenu:
+                    st.error(contenu)
+                else:
                     meta = {
                         "Établissement": donnees.get("nom_etablissement", ""),
-                        "Période": donnees.get("periode", "")
+                        "Période": donnees.get("periode", ""),
                     }
+
                     doc = creer_document_word(type_doc, contenu, meta)
 
                     from io import BytesIO
+
                     buffer = BytesIO()
                     doc.save(buffer)
                     buffer.seek(0)
 
+                    # Sauvegarder dans le dossier
                     nom_fichier = f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx"
                     chemin_fichier = os.path.join(dossier_sortie, nom_fichier)
                     with open(chemin_fichier, "wb") as f:
                         f.write(buffer.getvalue())
 
-                    st.success(f"✅ Document généré! Sauvegardé dans: documents_generes/")
+                    st.success(
+                        f"✅ Document généré! Sauvegardé dans: documents_generes/"
+                    )
 
                     st.download_button(
                         "📥 Télécharger",
                         buffer,
                         f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx",
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     )
 
                     with st.expander("👁️ Aperçu"):
                         st.text(contenu)
 
-                else:
-                    prompts = PROMPTS.get(doc_key)
 
-                    if prompts:
-                        sections = get_sections_template(doc_key)
-                        sections_str = "\n".join([f"I. {s}" for s in sections])
+# =============================================================================
+# PAGE: CAHIER DE PRÉSENCE (Norme 2.01e - 20pts)
+# =============================================================================
 
-                        # Ajouter les sections aux données
-                        donnees["sections"] = sections_str
+PRESENCE_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "presence_data.json"
+)
 
-                    user_prompt = prompts["user"].format(**donnees)
-                    contenu = generer_avec_groq(prompts["system"], user_prompt)
 
-                    if "Erreur" in contenu:
-                        st.error(contenu)
+def charger_presence():
+    try:
+        if os.path.exists(PRESENCE_FILE):
+            with open(PRESENCE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return []
+
+
+def sauvegarder_presence(data):
+    with open(PRESENCE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def page_cahier_presence():
+    st.title("📝 Cahier de Présence")
+    st.caption("Norme ESPC 2.01e - Pointage quotidien du personnel (20 pts)")
+    st.divider()
+
+    personnel_liste = [
+        {"nom": "KOUASSI Yao", "fonction": "Chef de Centre"},
+        {"nom": "KONÉ Abibata", "fonction": "Major / Sage-femme"},
+        {"nom": "TOURÉ Fatoumata", "fonction": "Chargée PEV"},
+        {"nom": "KOFFI Aka", "fonction": "Chargé Paludisme"},
+        {"nom": "N'GUESSAN Kouamé", "fonction": "Chargé VIH/PTME"},
+        {"nom": "KOUAKOU Akissi", "fonction": "Chargée CPN"},
+        {"nom": "BAMBA Sékou", "fonction": "Chargé Pharmacie"},
+        {"nom": "KRA Adjo", "fonction": "Agent d'entretien"},
+        {"nom": "DIBI Franck", "fonction": "Planton"},
+        {"nom": "KOUAMÉ Bertine", "fonction": "Secrétaire"},
+        {"nom": "GNAHOUA Olivier", "fonction": "Gardien"},
+        {"nom": "KONAN Blanche", "fonction": "ASC"},
+    ]
+
+    presence_data = charger_presence()
+    today = datetime.now().strftime("%Y-%m-%d")
+    jour_label = datetime.now().strftime("%A %d/%m/%Y")
+
+    tab1, tab2, tab3 = st.tabs(
+        ["✅ Pointage du jour", "📊 Historique", "📥 Export Word"]
+    )
+
+    with tab1:
+        st.markdown(f"### 📅 {jour_label}")
+        st.info("Cochez les agents présents aujourd'hui, puis enregistrez le pointage.")
+
+        avec_retard = []
+        absents = []
+
+        for p in personnel_liste:
+            col1, col2, col3, col4 = st.columns([3, 2, 1, 1])
+            col1.markdown(f"**{p['nom']}**")
+            col2.caption(p["fonction"])
+            present = col3.checkbox("Présent", key=f"pres_{p['nom']}_{today}")
+            retard = col4.checkbox("Retard", key=f"retard_{p['nom']}_{today}")
+            if present and retard:
+                avec_retard.append(p["nom"])
+            if not present:
+                absents.append(p["nom"])
+
+        st.divider()
+        st.markdown(
+            f"**Résumé:** {len(personnel_liste) - len(absents)}/{len(personnel_liste)} présent(s) | {len(avec_retard)} en retard | {len(absents)} absent(s)"
+        )
+
+        if absents:
+            st.warning(f"Absents: {', '.join(absents)}")
+        if avec_retard:
+            st.info(f"En retard: {', '.join(avec_retard)}")
+
+        heure_arrivee = st.time_input("Heure d'arrivée commune", key="heure_arr")
+        notes_jour = st.text_area("Notes / Observations du jour", key="notes_jour")
+
+        if st.button(
+            "💾 Enregistrer le pointage du jour",
+            type="primary",
+            use_container_width=True,
+        ):
+            entry = {
+                "date": today,
+                "heure_arrivee": str(heure_arrivee),
+                "personnel": [],
+                "notes": notes_jour,
+            }
+            for p in personnel_liste:
+                present_key = f"pres_{p['nom']}_{today}"
+                retard_key = f"retard_{p['nom']}_{today}"
+                entry["personnel"].append(
+                    {
+                        "nom": p["nom"],
+                        "fonction": p["fonction"],
+                        "present": st.session_state.get(present_key, False),
+                        "retard": st.session_state.get(retard_key, False),
+                    }
+                )
+
+            # Remove existing entry for today if any
+            presence_data = [d for d in presence_data if d["date"] != today]
+            presence_data.append(entry)
+            sauvegarder_presence(presence_data)
+            st.success("✅ Pointage enregistré!")
+
+    with tab2:
+        st.markdown("### 📊 Historique des pointages")
+
+        if presence_data:
+            sorted_data = sorted(presence_data, key=lambda x: x["date"], reverse=True)
+
+            for entry in sorted_data[:30]:
+                presents = [p for p in entry["personnel"] if p["present"]]
+                absents_jour = [p for p in entry["personnel"] if not p["present"]]
+                retardataires = [p for p in entry["personnel"] if p.get("retard")]
+
+                with st.expander(
+                    f"📅 {entry['date']} — {len(presents)}/{len(entry['personnel'])} présent(s)"
+                ):
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Présents", len(presents))
+                    c2.metric("Retards", len(retardataires))
+                    c3.metric("Absents", len(absents_jour))
+
+                    if absents_jour:
+                        st.warning(
+                            f"**Absents:** {', '.join([a['nom'] for a in absents_jour])}"
+                        )
+                    if retardataires:
+                        st.info(
+                            f"**En retard:** {', '.join([r['nom'] for r in retardataires])}"
+                        )
+                    if entry.get("notes"):
+                        st.text(f"Notes: {entry['notes']}")
+        else:
+            st.info(
+                "Aucun pointage enregistré. Commencez par enregistrer le pointage du jour."
+            )
+
+    with tab3:
+        st.markdown("### 📥 Exporter le cahier de présence en Word")
+
+        mois_export = st.selectbox(
+            "Mois",
+            [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ],
+            index=datetime.now().month - 1,
+        )
+        annee_export = st.number_input(
+            "Année", min_value=2020, max_value=2030, value=datetime.now().year
+        )
+
+        if st.button("📄 Générer le cahier de présence Word"):
+            mois_num = [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ].index(mois_export) + 1
+
+            jours_dans_mois = calendar.monthrange(annee_export, mois_num)[1]
+
+            doc = Document()
+            heading = doc.add_heading("CAHIER DE PRÉSENCE", level=0)
+            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = doc.add_paragraph(
+                "MINISTÈRE DE LA SANTÉ, DE L'HYGIÈNE PUBLIQUE ET DE LA CMU"
+            )
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p = doc.add_paragraph("RÉGION SANITAIRE DU PORO - DISTRICT KORHOGO 1")
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p = doc.add_paragraph("CSR NAGNENEFOUN")
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            p = doc.add_paragraph()
+            run = p.add_run(f"Mois de {mois_export} {annee_export}")
+            run.bold = True
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            table = doc.add_table(
+                rows=len(personnel_liste) + 1, cols=jours_dans_mois + 2
+            )
+            table.style = "Table Grid"
+
+            table.rows[0].cells[0].text = "NOM & PRÉNOMS"
+            table.rows[0].cells[1].text = "FONCTION"
+            for j in range(jours_dans_mois):
+                table.rows[0].cells[j + 2].text = f"{j + 1}"
+
+            for i, p_data in enumerate(personnel_liste):
+                table.rows[i + 1].cells[0].text = p_data["nom"]
+                table.rows[i + 1].cells[1].text = p_data["fonction"]
+
+                for j in range(jours_dans_mois):
+                    jour_str = f"{annee_export}-{mois_num:02d}-{j + 1:02d}"
+                    day_entry = next(
+                        (d for d in presence_data if d["date"] == jour_str), None
+                    )
+                    if day_entry:
+                        emp = next(
+                            (
+                                e
+                                for e in day_entry["personnel"]
+                                if e["nom"] == p_data["nom"]
+                            ),
+                            None,
+                        )
+                        if emp:
+                            if emp["present"]:
+                                table.rows[i + 1].cells[j + 2].text = (
+                                    "P" if not emp.get("retard") else "R"
+                                )
+                            else:
+                                table.rows[i + 1].cells[j + 2].text = "A"
+
+            doc.add_paragraph()
+            doc.add_paragraph("Légende: P = Présent, R = Retard, A = Absent")
+            doc.add_paragraph()
+
+            doc.add_paragraph("Signatures:")
+            doc.add_paragraph()
+            p = doc.add_paragraph("Le Chef de Centre: ____________________")
+            p = doc.add_paragraph("Le Major: ____________________")
+            p = doc.add_paragraph("Date: ____/____/______")
+
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            st.download_button(
+                "📥 Télécharger le Cahier de Présence (.docx)",
+                buffer,
+                f"cahier_presence_{mois_export}_{annee_export}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+
+# =============================================================================
+# PAGE: SUIVI STOCK MÉDICAMENTS (Norme 12.01 - 75pts)
+# =============================================================================
+
+STOCK_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "stock_medicaments.json"
+)
+
+MEDICAMENTS_DEFAUT = [
+    {
+        "nom": "Artemether-Luméfantrine 20/120mg (Adulte)",
+        "categorie": "Antipaludique",
+        "seuil_alerte": 100,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Artemether-Luméfantrine 15/120mg (Enfant)",
+        "categorie": "Antipaludique",
+        "seuil_alerte": 200,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Artesunate injectable 60mg",
+        "categorie": "Antipaludique",
+        "seuil_alerte": 50,
+        "unite": "ampoules",
+    },
+    {
+        "nom": "Sulfadoxine-Pyriméthamine (SP)",
+        "categorie": "Antipaludique",
+        "seuil_alerte": 150,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Amoxicilline 500mg",
+        "categorie": "Antibiotique",
+        "seuil_alerte": 200,
+        "unite": "gélules",
+    },
+    {
+        "nom": "Amoxicilline 250mg (Enfant)",
+        "categorie": "Antibiotique",
+        "seuil_alerte": 300,
+        "unite": "gélules",
+    },
+    {
+        "nom": "Metronidazole 250mg",
+        "categorie": "Antibiotique",
+        "seuil_alerte": 150,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "ORS (Sels de réhydratation)",
+        "categorie": "Réhydratation",
+        "seuil_alerte": 100,
+        "unite": "sachets",
+    },
+    {
+        "nom": "Zinc 20mg",
+        "categorie": "Nutrition",
+        "seuil_alerte": 200,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Paracétamol 500mg",
+        "categorie": "Antidouleur",
+        "seuil_alerte": 300,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Paracétamol 100mg (Enfant)",
+        "categorie": "Antidouleur",
+        "seuil_alerte": 200,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Mébendazole 500mg",
+        "categorie": "Antihelminthique",
+        "seuil_alerte": 100,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "Vitamine A",
+        "categorie": "Nutrition",
+        "seuil_alerte": 100,
+        "unite": "gélules",
+    },
+    {
+        "nom": "Fer + Acide folique",
+        "categorie": "Nutrition",
+        "seuil_alerte": 200,
+        "unite": "comprimés",
+    },
+    {
+        "nom": "TDR Paludisme (boîte 25)",
+        "categorie": "Diagnostic",
+        "seuil_alerte": 20,
+        "unite": "boîtes",
+    },
+    {
+        "nom": "Gants stériles (boîte 100)",
+        "categorie": "Consommable",
+        "seuil_alerte": 10,
+        "unite": "boîtes",
+    },
+    {
+        "nom": "Seringues 5ml",
+        "categorie": "Consommable",
+        "seuil_alerte": 50,
+        "unite": "unités",
+    },
+    {
+        "nom": "Eau pour injection 10ml",
+        "categorie": "Consommable",
+        "seuil_alerte": 30,
+        "unite": "ampoules",
+    },
+]
+
+STOCK_CATEGORIES = [
+    "Antipaludique",
+    "Antibiotique",
+    "Réhydratation",
+    "Nutrition",
+    "Antidouleur",
+    "Antihelminthique",
+    "Diagnostic",
+    "Consommable",
+]
+
+
+def charger_stock():
+    try:
+        if os.path.exists(STOCK_FILE):
+            with open(STOCK_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return MEDICAMENTS_DEFAUT
+
+
+def sauvegarder_stock(data):
+    with open(STOCK_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def page_suivi_stock():
+    st.title("💊 Suivi Stock Médicaments")
+    st.caption(
+        "Norme ESPC 12.01 — Disponibilité continue des médicaments traceurs (75 pts)"
+    )
+    st.divider()
+
+    stock_data = charger_stock()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    tab1, tab2, tab3, tab4 = st.tabs(
+        [
+            "📊 État des stocks",
+            "➕ Mouvement de stock",
+            "🚨 Alertes rupture",
+            "📥 Export Word",
+        ]
+    )
+
+    with tab1:
+        st.markdown("### 📊 État actuel des stocks")
+
+        cat_filter = st.selectbox(
+            "Filtrer par catégorie", ["Toutes"] + STOCK_CATEGORIES
+        )
+        affichage = stock_data
+        if cat_filter != "Toutes":
+            affichage = [s for s in stock_data if s.get("categorie") == cat_filter]
+
+        for i, med in enumerate(affichage):
+            stock_actuel = med.get("stock_actuel", 0)
+            seuil = med.get("seuil_alerte", 0)
+            unite = med.get("unite", "unités")
+
+            if stock_actuel <= 0:
+                status = "🔴 RUPTURE"
+            elif stock_actuel <= seuil:
+                status = "🟡 ALERTE"
+            else:
+                status = "🟢 OK"
+
+            col1, col2, col3, col4 = st.columns([4, 2, 2, 1])
+            col1.markdown(f"**{med['nom']}**")
+            col2.markdown(f"Stock: **{stock_actuel}** {unite}")
+            col3.markdown(status)
+            col4.caption(f"Seuil: {seuil}")
+
+    with tab2:
+        st.markdown("### ➕ Enregistrer un mouvement de stock")
+
+        with st.form("mouvement_stock"):
+            med_options = [m["nom"] for m in stock_data]
+            med_select = st.selectbox("Médicament", med_options)
+            type_mouvement = st.selectbox(
+                "Type de mouvement",
+                ["Entrée (réception)", "Sortie (consommation)", "Périmé/Détruit"],
+            )
+            quantite = st.number_input("Quantité", min_value=1, value=1)
+            source = st.text_input(
+                "Source / Fournisseur", "District / Pharmacie centrale"
+            )
+            observation = st.text_area("Observation", "")
+
+            submitted = st.form_submit_button(
+                "💾 Enregistrer le mouvement", use_container_width=True
+            )
+
+            if submitted:
+                idx = next(
+                    (i for i, m in enumerate(stock_data) if m["nom"] == med_select),
+                    None,
+                )
+                if idx is not None:
+                    if "Entrée" in type_mouvement:
+                        stock_data[idx]["stock_actuel"] = (
+                            stock_data[idx].get("stock_actuel", 0) + quantite
+                        )
                     else:
-                        meta = {
-                            "Établissement": donnees.get("nom_etablissement", ""),
-                            "Période": donnees.get("periode", "")
-                        }
-
-                        doc = creer_document_word(type_doc, contenu, meta)
-
-                        from io import BytesIO
-                        buffer = BytesIO()
-                        doc.save(buffer)
-                        buffer.seek(0)
-
-                        # Sauvegarder dans le dossier
-                        nom_fichier = f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx"
-                        chemin_fichier = os.path.join(dossier_sortie, nom_fichier)
-                        with open(chemin_fichier, "wb") as f:
-                            f.write(buffer.getvalue())
-
-                        st.success(f"✅ Document généré! Sauvegardé dans: documents_generes/")
-
-                        st.download_button(
-                            "📥 Télécharger",
-                            buffer,
-                            f"{type_doc}_{donnees.get('nom_etablissement', 'document')}.docx",
-                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        stock_data[idx]["stock_actuel"] = max(
+                            0, stock_data[idx].get("stock_actuel", 0) - quantite
                         )
 
-                        with st.expander("👁️ Aperçu"):
-                            st.text(contenu)
+                    sauvegarder_stock(stock_data)
+                    st.success(
+                        f"✅ Mouvement enregistré: {type_mouvement} de {quantite} {stock_data[idx].get('unite', 'unités')}"
+                    )
+
+    with tab3:
+        st.markdown("### 🚨 Alertes de rupture")
+
+        ruptures = [s for s in stock_data if s.get("stock_actuel", 0) <= 0]
+        alertes = [
+            s
+            for s in stock_data
+            if 0 < s.get("stock_actuel", 0) <= s.get("seuil_alerte", 0)
+        ]
+
+        if ruptures:
+            st.error(f"**{len(ruptures)} médicament(s) en RUPTURE de stock:**")
+            for r in ruptures:
+                st.markdown(f"- 🔴 **{r['nom']}** — Stock: 0 {r.get('unite', '')}")
+        else:
+            st.success("Aucune rupture de stock.")
+
+        if alertes:
+            st.warning(f"**{len(alertes)} médicament(s) en stock d'ALERTE:**")
+            for a in alertes:
+                st.markdown(
+                    f"- 🟡 **{a['nom']}** — Stock: {a.get('stock_actuel', 0)} {a.get('unite', '')} (seuil: {a.get('seuil_alerte', 0)})"
+                )
+        else:
+            st.success("Tous les stocks sont au-dessus du seuil d'alerte.")
+
+        st.divider()
+        total = len(stock_data)
+        ok = len(
+            [
+                s
+                for s in stock_data
+                if s.get("stock_actuel", 0) > s.get("seuil_alerte", 0)
+            ]
+        )
+        st.metric(
+            "Taux de disponibilité",
+            f"{ok}/{total} ({ok * 100 // total if total else 0}%)",
+        )
+
+    with tab4:
+        st.markdown("### 📥 Exporter le suivi des stocks en Word")
+
+        if st.button("📄 Générer le rapport de stock Word", key="export_stock"):
+            doc = Document()
+            heading = doc.add_heading(
+                "SUIVI DE LA DISPONIBILITÉ DES MÉDICAMENTS TRACEURS", level=0
+            )
+            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = doc.add_paragraph(
+                "CSR NAGNENEFOUN — District KORHOGO 1 — Région du PORO"
+            )
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            p = doc.add_paragraph()
+            run = p.add_run(f"État des stocks au {today}")
+            run.bold = True
+            doc.add_paragraph()
+
+            table = doc.add_table(rows=len(stock_data) + 1, cols=5)
+            table.style = "Table Grid"
+
+            headers = [
+                "Désignation",
+                "Catégorie",
+                "Stock actuel",
+                "Seuil alerte",
+                "Statut",
+            ]
+            for i, h in enumerate(headers):
+                table.rows[0].cells[i].text = h
+
+            for i, med in enumerate(stock_data):
+                stock_actuel = med.get("stock_actuel", 0)
+                seuil = med.get("seuil_alerte", 0)
+                if stock_actuel <= 0:
+                    statut = "RUPTURE"
+                elif stock_actuel <= seuil:
+                    statut = "ALERTE"
+                else:
+                    statut = "OK"
+
+                table.rows[i + 1].cells[0].text = med["nom"]
+                table.rows[i + 1].cells[1].text = med.get("categorie", "")
+                table.rows[i + 1].cells[
+                    2
+                ].text = f"{stock_actuel} {med.get('unite', '')}"
+                table.rows[i + 1].cells[3].text = f"{seuil} {med.get('unite', '')}"
+                table.rows[i + 1].cells[4].text = statut
+
+            doc.add_paragraph()
+            doc.add_paragraph(f"Rapport établi le {today} par le Chargé de Pharmacie")
+            doc.add_paragraph("Signatures:")
+            doc.add_paragraph("Le Chargé de Pharmacie: ____________________")
+            doc.add_paragraph("Le Chef de Centre: ____________________")
+
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            st.download_button(
+                "📥 Télécharger le rapport de stock (.docx)",
+                buffer,
+                f"suivi_stock_{today}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+
+# =============================================================================
+# PAGE: ENQUÊTE SATISFACTION USAGERS (Norme 13.01 - 150pts)
+# =============================================================================
+
+ENQUETE_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "enquete_satisfaction.json"
+)
+
+QUESTIONS_ENQUETE = [
+    {"id": 1, "texte": "Accueil à l'entrée du centre", "categorie": "Accueil"},
+    {"id": 2, "texte": "Temps d'attente avant consultation", "categorie": "Accueil"},
+    {"id": 3, "texte": "Écoute et attention du soignant", "categorie": "Soins"},
+    {"id": 4, "texte": "Clarté des explications reçues", "categorie": "Soins"},
+    {"id": 5, "texte": "Propreté des locaux", "categorie": "Environnement"},
+    {"id": 6, "texte": "Disponibilité des médicaments", "categorie": "Pharmacie"},
+    {"id": 7, "texte": "Respect de la vie privée", "categorie": "Soins"},
+    {"id": 8, "texte": "Coût des soins acceptable", "categorie": "Coût"},
+    {
+        "id": 9,
+        "texte": "Facilité de trouver le service souhaité",
+        "categorie": "Accueil",
+    },
+    {"id": 10, "texte": "Satisfaction globale", "categorie": "Général"},
+]
+
+
+def charger_enquete():
+    try:
+        if os.path.exists(ENQUETE_FILE):
+            with open(ENQUETE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return []
+
+
+def sauvegarder_enquete(data):
+    with open(ENQUETE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def page_satisfaction():
+    st.title("⭐ Enquête Satisfaction Usagers")
+    st.caption("Norme ESPC 13.01 — Enquête de satisfaction des patients (150 pts)")
+    st.divider()
+
+    enquete_data = charger_enquete()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    tab1, tab2, tab3 = st.tabs(
+        ["📝 Nouvelle enquête", "📊 Résultats", "📥 Export Word"]
+    )
+
+    with tab1:
+        st.markdown("### 📝 Formulaire de satisfaction")
+        st.markdown(
+            "Demandez au patient d'évaluer chaque critère de **1 (Très mécontent) à 5 (Très content)**."
+        )
+
+        with st.form("form_enquete"):
+            col1, col2 = st.columns(2)
+            with col1:
+                sexe = st.selectbox("Sexe", ["Homme", "Femme"])
+                age = st.number_input("Âge", min_value=0, max_value=120, value=30)
+            with col2:
+                service_consulte = st.selectbox(
+                    "Service consulté",
+                    [
+                        "Consultation générale",
+                        "Maternité/CPN",
+                        "PEV/Vaccination",
+                        "Pharmacie",
+                        "Urgence",
+                        "Autre",
+                    ],
+                )
+                date_enquete = st.date_input("Date de l'enquête")
+
+            st.markdown("---")
+            reponses = {}
+            for q in QUESTIONS_ENQUETE:
+                reponses[str(q["id"])] = st.slider(
+                    f"{q['texte']} ({q['categorie']})",
+                    min_value=1,
+                    max_value=5,
+                    value=3,
+                    key=f"q_{q['id']}",
+                )
+
+            commentaire = st.text_area("Commentaire / Suggestion du patient")
+
+            submitted = st.form_submit_button(
+                "💾 Enregistrer l'enquête", use_container_width=True
+            )
+
+            if submitted:
+                entry = {
+                    "date": str(date_enquete),
+                    "sexe": sexe,
+                    "age": age,
+                    "service": service_consulte,
+                    "reponses": reponses,
+                    "commentaire": commentaire,
+                    "score_moyen": round(sum(reponses.values()) / len(reponses), 1),
+                }
+                enquete_data.append(entry)
+                sauvegarder_enquete(enquete_data)
+                st.success(
+                    f"✅ Enquête enregistrée! Score moyen: {entry['score_moyen']}/5"
+                )
+
+    with tab2:
+        st.markdown("### 📊 Résultats des enquêtes")
+
+        if enquete_data:
+            total_enquetes = len(enquete_data)
+            score_global = round(
+                sum(e["score_moyen"] for e in enquete_data) / total_enquetes, 1
+            )
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Total enquêtes", total_enquetes)
+            col2.metric("Score moyen global", f"{score_global}/5")
+            col3.metric("Taux satisfaction", f"{score_global * 20:.0f}%")
+
+            st.divider()
+            st.markdown("### 📈 Scores par critère")
+            for q in QUESTIONS_ENQUETE:
+                scores = [int(e["reponses"].get(str(q["id"]), 3)) for e in enquete_data]
+                moyenne = round(sum(scores) / len(scores), 1) if scores else 0
+                st.markdown(f"- **{q['texte']}**: {moyenne}/5")
+
+            st.divider()
+            st.markdown("### 📊 Répartition par service")
+            services = {}
+            for e in enquete_data:
+                s = e.get("service", "Non précisé")
+                if s not in services:
+                    services[s] = []
+                services[s].append(e["score_moyen"])
+            for s, scores in services.items():
+                avg = round(sum(scores) / len(scores), 1)
+                st.markdown(f"- **{s}**: {avg}/5 ({len(scores)} enquêtes)")
+
+            st.divider()
+            st.markdown("### 💬 Derniers commentaires")
+            for e in reversed(enquete_data[-10:]):
+                if e.get("commentaire"):
+                    st.markdown(
+                        f"- _{e['date']}_ ({e.get('service', '')}): {e['commentaire']}"
+                    )
+        else:
+            st.info("Aucune enquête enregistrée. Commencez par remplir le formulaire.")
+
+    with tab3:
+        st.markdown("### 📥 Exporter les résultats en Word")
+
+        mois_export = st.selectbox(
+            "Mois",
+            [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ],
+            index=datetime.now().month - 1,
+            key="mois_enquete",
+        )
+        annee_export = st.number_input(
+            "Année",
+            min_value=2020,
+            max_value=2030,
+            value=datetime.now().year,
+            key="annee_enquete",
+        )
+
+        if st.button("📄 Générer le rapport de satisfaction Word"):
+            doc = Document()
+            heading = doc.add_heading(
+                "RAPPORT D'ENQUÊTE DE SATISFACTION DES USAGERS", level=0
+            )
+            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = doc.add_paragraph(
+                "CSR NAGNENEFOUN — District KORHOGO 1 — Région du PORO"
+            )
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            total_enquetes = len(enquete_data)
+            score_global = round(
+                sum(e["score_moyen"] for e in enquete_data) / max(total_enquetes, 1), 1
+            )
+
+            doc.add_paragraph(f"Période: {mois_export} {annee_export}")
+            doc.add_paragraph(f"Nombre d'enquêtes: {total_enquetes}")
+            doc.add_paragraph(
+                f"Score moyen global: {score_global}/5 ({score_global * 20:.0f}%)"
+            )
+            doc.add_paragraph()
+
+            doc.add_heading("Scores par critère", level=1)
+            table = doc.add_table(rows=len(QUESTIONS_ENQUETE) + 1, cols=4)
+            table.style = "Table Grid"
+            table.rows[0].cells[0].text = "Critère"
+            table.rows[0].cells[1].text = "Catégorie"
+            table.rows[0].cells[2].text = "Score moyen"
+            table.rows[0].cells[3].text = "Appréciation"
+
+            for i, q in enumerate(QUESTIONS_ENQUETE):
+                scores = [int(e["reponses"].get(str(q["id"]), 3)) for e in enquete_data]
+                moyenne = round(sum(scores) / len(scores), 1) if scores else 0
+                if moyenne >= 4:
+                    appreciation = "Satisfaisant"
+                elif moyenne >= 3:
+                    appreciation = "Moyen"
+                else:
+                    appreciation = "Insuffisant"
+                table.rows[i + 1].cells[0].text = q["texte"]
+                table.rows[i + 1].cells[1].text = q["categorie"]
+                table.rows[i + 1].cells[2].text = f"{moyenne}/5"
+                table.rows[i + 1].cells[3].text = appreciation
+
+            doc.add_paragraph()
+            doc.add_heading("Recommandations", level=1)
+            doc.add_paragraph(
+                "1. Améliorer les points identifiés avec un score inférieur à 3/5"
+            )
+            doc.add_paragraph(
+                "2. Maintenir les points forts identifiés par les usagers"
+            )
+            doc.add_paragraph("3. Diffuser les résultats à l'ensemble du personnel")
+            doc.add_paragraph(
+                "4. Mettre en place un plan d'action pour les améliorations"
+            )
+
+            doc.add_paragraph()
+            doc.add_paragraph("Rapport établi le " + today)
+            doc.add_paragraph("Le Chef de Centre: ____________________")
+
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            st.download_button(
+                "📥 Télécharger le rapport de satisfaction (.docx)",
+                buffer,
+                f"rapport_satisfaction_{mois_export}_{annee_export}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+
+# =============================================================================
+# PAGE: FICHES STOCK ASC (Norme 15.01 - 50pts)
+# =============================================================================
+
+STOCK_ASC_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "stock_asc.json"
+)
+
+INTRANTS_ASC = [
+    {"nom": "TDR Paludisme (boîte 25)", "unite": "boîtes"},
+    {"nom": "ACT Adulte (cure)", "unite": "cures"},
+    {"nom": "ACT Enfant (cure)", "unite": "cures"},
+    {"nom": "MII (Moustiquaires Imprégnées)", "unite": "moustiquaires"},
+    {"nom": "Préservatifs (paquet de 3)", "unite": "paquets"},
+    {"nom": "ORS (sachets)", "unite": "sachets"},
+    {"nom": "Zinc 20mg", "unite": "comprimés"},
+    {"nom": "Vitamine A", "unite": "gélules"},
+    {"nom": "MUAC (Bracelet malnutrition)", "unite": "unités"},
+    {"nom": "Fiches de sensibilisation", "unite": "exemplaires"},
+]
+
+ASC_LISTE = [
+    {"nom": "KONAN Blanche", "village": "Nagnenefoun Centre"},
+    {"nom": "YEO Aminata", "village": "Korhogo Nord"},
+    {"nom": "DIALLO Moussa", "village": "Ferké"},
+]
+
+
+def charger_stock_asc():
+    try:
+        if os.path.exists(STOCK_ASC_FILE):
+            with open(STOCK_ASC_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return []
+
+
+def sauvegarder_stock_asc(data):
+    with open(STOCK_ASC_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def page_stock_asc():
+    st.title("📦 Fiches Stock ASC")
+    st.caption("Norme ESPC 15.01 — Suivi des intrants et médicaments des ASC (50 pts)")
+    st.divider()
+
+    stock_asc = charger_stock_asc()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    tab1, tab2, tab3 = st.tabs(
+        ["📊 État des stocks ASC", "➕ Mouvement", "📥 Export Word"]
+    )
+
+    with tab1:
+        st.markdown("### 📊 Suivi des stocks par ASC")
+
+        asc_select = st.selectbox("Choisir un ASC", [a["nom"] for a in ASC_LISTE])
+        asc_info = next((a for a in ASC_LISTE if a["nom"] == asc_select), None)
+
+        st.info(f"Village/Aire: {asc_info['village'] if asc_info else ''}")
+
+        # Get or init stock for this ASC
+        asc_stock = next((s for s in stock_asc if s["asc"] == asc_select), None)
+        if not asc_stock:
+            asc_stock = {
+                "asc": asc_select,
+                "village": asc_info["village"] if asc_info else "",
+                "intrants": {},
+            }
+            stock_asc.append(asc_stock)
+            sauvegarder_stock_asc(stock_asc)
+
+        for intrant in INTRANTS_ASC:
+            stock_val = asc_stock["intrants"].get(intrant["nom"], 0)
+            col1, col2, col3 = st.columns([4, 2, 2])
+            col1.markdown(f"**{intrant['nom']}**")
+            col2.markdown(f"Stock: **{stock_val}** {intrant['unite']}")
+            if stock_val == 0:
+                col3.markdown("🔴 RUPTURE")
+            else:
+                col3.markdown("🟢 OK")
+
+    with tab2:
+        st.markdown("### ➕ Enregistrer un mouvement")
+
+        with st.form("mouvement_asc"):
+            asc_mv = st.selectbox("ASC", [a["nom"] for a in ASC_LISTE], key="asc_mv")
+            intrant_mv = st.selectbox("Intrant", [i["nom"] for i in INTRANTS_ASC])
+            type_mv = st.selectbox(
+                "Type",
+                [
+                    "Entrée (réception du centre)",
+                    "Sortie (distribution communautaire)",
+                    "Perte/Expiration",
+                ],
+            )
+            quantite_mv = st.number_input("Quantité", min_value=1, value=1)
+            date_mv = st.date_input("Date")
+            obs_mv = st.text_area("Observation", "")
+
+            if st.form_submit_button("💾 Enregistrer", use_container_width=True):
+                asc_stock = next((s for s in stock_asc if s["asc"] == asc_mv), None)
+                if asc_stock:
+                    current = asc_stock["intrants"].get(intrant_mv, 0)
+                    if "Entrée" in type_mv:
+                        asc_stock["intrants"][intrant_mv] = current + quantite_mv
+                    else:
+                        asc_stock["intrants"][intrant_mv] = max(
+                            0, current - quantite_mv
+                        )
+                    sauvegarder_stock_asc(stock_asc)
+                    st.success("✅ Mouvement enregistré!")
+
+    with tab3:
+        st.markdown("### 📥 Exporter les fiches stock ASC en Word")
+
+        if st.button("📄 Générer les fiches stock ASC Word", key="export_asc"):
+            doc = Document()
+            heading = doc.add_heading(
+                "FICHES DE STOCK DES AGENTS DE SANTÉ COMMUNAUTAIRE", level=0
+            )
+            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = doc.add_paragraph(
+                "CSR NAGNENEFOUN — District KORHOGO 1 — Région du PORO"
+            )
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            for asc in ASC_LISTE:
+                asc_stock = next((s for s in stock_asc if s["asc"] == asc["nom"]), None)
+
+                doc.add_heading(
+                    f"ASC: {asc['nom']} — Village: {asc['village']}", level=1
+                )
+
+                table = doc.add_table(rows=len(INTRANTS_ASC) + 1, cols=3)
+                table.style = "Table Grid"
+                table.rows[0].cells[0].text = "Intrant"
+                table.rows[0].cells[1].text = "Stock disponible"
+                table.rows[0].cells[2].text = "Statut"
+
+                for i, intrant in enumerate(INTRANTS_ASC):
+                    stock_val = (
+                        asc_stock["intrants"].get(intrant["nom"], 0) if asc_stock else 0
+                    )
+                    statut = "RUPTURE" if stock_val == 0 else "OK"
+                    table.rows[i + 1].cells[
+                        0
+                    ].text = f"{intrant['nom']} ({intrant['unite']})"
+                    table.rows[i + 1].cells[1].text = str(stock_val)
+                    table.rows[i + 1].cells[2].text = statut
+
+                doc.add_paragraph()
+
+            doc.add_paragraph(f"Fiche établie le {today}")
+            doc.add_paragraph("Le Chargé de Programme: ____________________")
+
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            st.download_button(
+                "📥 Télécharger les fiches stock ASC (.docx)",
+                buffer,
+                f"fiches_stock_asc_{today}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+
+# =============================================================================
+# PAGE: FICHE NOTIFICATION DÉCÈS MATERNEL (Norme 8.01 - 20pts)
+# =============================================================================
+
+DECES_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "notifications_deces.json"
+)
+
+
+def charger_deces():
+    try:
+        if os.path.exists(DECES_FILE):
+            with open(DECES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return []
+
+
+def sauvegarder_deces(data):
+    with open(DECES_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def page_notification_deces():
+    st.title("📋 Notification Décès Maternel")
+    st.caption("Norme ESPC 8.01 — Outils de notification des décès maternels (20 pts)")
+    st.divider()
+
+    deces_data = charger_deces()
+
+    tab1, tab2, tab3 = st.tabs(
+        ["📝 Nouvelle notification", "📋 Registre", "📥 Export Word"]
+    )
+
+    with tab1:
+        st.markdown("### 📝 Fiche de notification de décès maternel")
+        st.warning(
+            "Norme 8.01 a: Tenir à disposition 5 fiches vierges de notification de décès maternel"
+        )
+
+        with st.form("form_deces"):
+            col1, col2 = st.columns(2)
+            with col1:
+                nom_defunt = st.text_input("Nom et prénoms de la défunte")
+                age = st.number_input("Âge", min_value=12, max_value=60, value=25)
+                adresse = st.text_input("Adresse / Village")
+            with col2:
+                date_deces = st.date_input("Date du décès")
+                lieu = st.selectbox(
+                    "Lieu du décès",
+                    [
+                        "Centre de santé",
+                        "Domicile",
+                        "Chemin",
+                        "Hôpital de référence",
+                        "Autre",
+                    ],
+                )
+                date_accouchement = st.date_input(
+                    "Date de l'accouchement (si applicable)"
+                )
+
+            col3, col4 = st.columns(2)
+            with col3:
+                nb_grossesses = st.number_input(
+                    "Nombre de grossesses", min_value=1, max_value=15, value=2
+                )
+                nb_enfants = st.number_input(
+                    "Nombre d'enfants vivants", min_value=0, max_value=15, value=1
+                )
+            with col4:
+                type_accouchement = st.selectbox(
+                    "Type d'accouchement",
+                    ["Spontané", "Césarienne", "Autre", "Non applicable"],
+                )
+                duree_grossesse = st.number_input(
+                    "Durée de grossesse (semaines)",
+                    min_value=20,
+                    max_value=45,
+                    value=38,
+                )
+
+            st.markdown("**Circonstances du décès:**")
+            circonstances = st.selectbox(
+                "Circonstance principale",
+                [
+                    "Hémorragie du post-partum",
+                    "Éclampsie / Préeclampsie",
+                    "Infection / Sepse",
+                    "Obstruction mécanique",
+                    "Rupture utérine",
+                    "Embolie",
+                    "Autre",
+                    "Inconnue",
+                ],
+            )
+
+            delai_prendre_charge = st.selectbox(
+                "Délai avant prise en charge",
+                [
+                    "Moins de 1 heure",
+                    "1 à 3 heures",
+                    "3 à 6 heures",
+                    "Plus de 6 heures",
+                    "Non pris en charge",
+                ],
+            )
+
+            observation = st.text_area("Observations complémentaires")
+
+            if st.form_submit_button(
+                "💾 Enregistrer la notification", use_container_width=True
+            ):
+                entry = {
+                    "date_notification": datetime.now().strftime("%Y-%m-%d"),
+                    "nom_defunt": nom_defunt,
+                    "age": age,
+                    "adresse": adresse,
+                    "date_deces": str(date_deces),
+                    "lieu_deces": lieu,
+                    "date_accouchement": str(date_accouchement),
+                    "nb_grossesses": nb_grossesses,
+                    "nb_enfants": nb_enfants,
+                    "type_accouchement": type_accouchement,
+                    "duree_grossesse": duree_grossesse,
+                    "circonstances": circonstances,
+                    "delai_prendre_charge": delai_prendre_charge,
+                    "observation": observation,
+                }
+                deces_data.append(entry)
+                sauvegarder_deces(deces_data)
+                st.success("✅ Notification enregistrée!")
+
+    with tab2:
+        st.markdown("### 📋 Registre des notifications de décès maternels")
+
+        if deces_data:
+            for i, d in enumerate(reversed(deces_data)):
+                with st.expander(f"📋 {d['nom_defunt']} — Décès le {d['date_deces']}"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown(f"**Âge:** {d['age']} ans")
+                        st.markdown(f"**Adresse:** {d['adresse']}")
+                        st.markdown(f"**Lieu:** {d['lieu_deces']}")
+                        st.markdown(f"**Circonstances:** {d['circonstances']}")
+                    with col2:
+                        st.markdown(f"**Grossesses:** {d['nb_grossesses']}")
+                        st.markdown(f"**Enfants vivants:** {d['nb_enfants']}")
+                        st.markdown(f"**Type accouchement:** {d['type_accouchement']}")
+                        st.markdown(
+                            f"**Délai prise en charge:** {d['delai_prendre_charge']}"
+                        )
+                    if d.get("observation"):
+                        st.text(f"Observation: {d['observation']}")
+        else:
+            st.info("Aucune notification enregistrée.")
+
+    with tab3:
+        st.markdown("### 📥 Exporter les notifications en Word")
+
+        if st.button(
+            "📄 Générer le registre de notifications Word", key="export_deces"
+        ):
+            doc = Document()
+            heading = doc.add_heading(
+                "FICHE DE NOTIFICATION DE DÉCÈS MATERNEL", level=0
+            )
+            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = doc.add_paragraph(
+                "CSR NAGNENEFOUN — District KORHOGO 1 — Région du PORO"
+            )
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p = doc.add_paragraph("Conforme à la Norme ESPC 8.01 a")
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_paragraph()
+
+            if deces_data:
+                for d in deces_data:
+                    doc.add_heading(
+                        f"Notification N° {deces_data.index(d) + 1}", level=2
+                    )
+
+                    table = doc.add_table(rows=8, cols=2)
+                    table.style = "Table Grid"
+                    table.rows[0].cells[0].text = "Nom et prénoms"
+                    table.rows[0].cells[1].text = d["nom_defunt"]
+                    table.rows[1].cells[0].text = "Âge"
+                    table.rows[1].cells[1].text = f"{d['age']} ans"
+                    table.rows[2].cells[0].text = "Adresse"
+                    table.rows[2].cells[1].text = d["adresse"]
+                    table.rows[3].cells[0].text = "Date du décès"
+                    table.rows[3].cells[1].text = d["date_deces"]
+                    table.rows[4].cells[0].text = "Lieu du décès"
+                    table.rows[4].cells[1].text = d["lieu_deces"]
+                    table.rows[5].cells[0].text = "Circonstances"
+                    table.rows[5].cells[1].text = d["circonstances"]
+                    table.rows[6].cells[0].text = "Délai prise en charge"
+                    table.rows[6].cells[1].text = d["delai_prendre_charge"]
+                    table.rows[7].cells[0].text = "Observations"
+                    table.rows[7].cells[1].text = d.get("observation", "")
+
+                    doc.add_paragraph()
+            else:
+                doc.add_paragraph("Aucune notification enregistrée.")
+                doc.add_paragraph()
+                doc.add_paragraph("(Fiches vierges prêtes à imprimer pour le terrain)")
+
+                for i in range(5):
+                    doc.add_heading(f"Fiche vierge N° {i + 1}", level=2)
+                    table = doc.add_table(rows=8, cols=2)
+                    table.style = "Table Grid"
+                    table.rows[0].cells[0].text = "Nom et prénoms"
+                    table.rows[1].cells[0].text = "Âge"
+                    table.rows[2].cells[0].text = "Adresse"
+                    table.rows[3].cells[0].text = "Date du décès"
+                    table.rows[4].cells[0].text = "Lieu du décès"
+                    table.rows[5].cells[0].text = "Circonstances"
+                    table.rows[6].cells[0].text = "Délai prise en charge"
+                    table.rows[7].cells[0].text = "Observations"
+                    doc.add_paragraph()
+
+            doc.add_paragraph()
+            doc.add_paragraph("Registre tenu par le Chef de Centre")
+            doc.add_paragraph(
+                "Transmission au District Sanitaire de KORHOGO 1: ____________________"
+            )
+
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            st.download_button(
+                "📥 Télécharger le registre de notifications (.docx)",
+                buffer,
+                f"registre_notifications_deces_{today}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+
+# =============================================================================
+# ASSISTANT ESPC - CHATBOT
+# =============================================================================
+
+
+def get_espc_knowledge():
+    return """GRILLE ESPC - Évaluation des ESPC (1600 points)
+
+A. MANAGEMENT (600 pts)
+1. Gouvernance (200 pts): PAA budgétisé (50), COGES (20), Transparence (35), Assurance qualité (75), Données (20)
+2. RH (50 pts): Liste personnel (5), Fiches de poste (5), Planning (5), Gardes (5), Présence (20), Évaluations (10)
+3. Finance (350 pts): Documents comptables (175), Primes (100), Flux financiers (75)
+
+B. QUALITÉ DES SOINS (750 pts)
+4. Accueil (175 pts): Signalétique (30), Dispositif accueil (40), CMU (75), Attente (30)
+5. Sécurité (25 pts): Sécurité/éclairage/environnement
+6. Hygiène (150 pts): Cadre hygiène (8), Procédures (5), Prévention infections (55), Stérilisation (5), Déchets (40), Entretien (15), Toilettes (22)
+7. SONU (125 pts): Infrastructures (40), Personnel (7), Fonctions (24), Protocoles (3), Urgences (3), Médicaments (8), Nouveau-né (9), Post-partum (32)
+8. Décès maternels (50 pts): Notification (20), Transmission district (30)
+9. PF (50 pts): Local (8), Matériels (12), Personnel DIU (15), Personnel Implant (15)
+10. Pathologies (50 pts): Paludisme (30), IRA-Diarrhée (20)
+11. Pharmacie (50 pts): Local stockage (15), Outils gestion (20), Gestion qualité (15)
+12. Médicaments traceurs (75 pts): Disponibilité continue (75)
+
+C. SATISFACTION (150 pts)
+13. Enquête satisfaction (150 pts)
+
+D. COMMUNAUTAIRE (100 pts)
+14. Supervision ASC (50 pts): Liste (3), Plan (2), Grille (3), Rapports (23), Transmission (15)
+15. Médicaments ASC (50 pts): Fiches stock (10), Rapport activités (10), Ruptures (30)"""
+
+
+def get_templates_knowledge():
+    return """DOCUMENTS DISPONIBLES (17 documents + 5 modules):
+1. PV Réunion Mensuelle - Réunion mensuelle personnel (Norme 1.01)
+2. PV Réunion COGES - Réunion trimestrielle comité gestion (Norme 1.02)
+3. PV Assemblée Générale - Assemblée annuelle (Norme 1.03)
+4. Rapport Supervision ASC - Rapport mensuel supervision (Norme 14.01)
+5. Rapport Plaintes/Suggestions - Boîte à suggestions (Norme 4.02)
+6. Fiche de Poste - Par catégorie (Norme 2.01b)
+7. Fiche de Nomination - 12 types (Note service, Arrêté, etc.)
+8. Programme Réunions Trimestrielles - Calendrier stratégique
+9. Calendrier Nettoyage Centre - Plan nettoyage (Norme 6.01)
+10. Calendrier Réunions Mensuelles - 12 mois
+11. Grille Supervision ASC - Évaluation ASC (Norme 14.01c)
+12. Liste Personnel COGES - Liste officielle (Norme 1.02)
+13. Plan Action Infections Nosocomiales - PCI (Norme 6.05)
+14. Plan Supervision ASC - Plan annuel (Norme 14.01b)
+15. Rapport Formation Personnel - Rapport formation (Norme 1.04b)
+16. Liste Personnel Centre - Liste officielle (Norme 2.01a)
+17. Note de Service - 6 types de notes de service
+
+MODULES: Présence (2.01e), Stock Médicaments (12.01), Satisfaction (13.01), Stock ASC (15.01), Décès Maternel (8.01)"""
+
+
+def get_saved_data_summary():
+    summary = []
+    try:
+        stock = charger_stock()
+        if stock:
+            ruptures = [s for s in stock if s.get("stock_actuel", 0) <= 0]
+            alertes = [
+                s
+                for s in stock
+                if 0 < s.get("stock_actuel", 0) <= s.get("seuil_alerte", 0)
+            ]
+            summary.append(
+                f"Stock médicaments: {len(stock)} produits, {len(ruptures)} ruptures, {len(alertes)} alertes"
+            )
+    except:
+        pass
+    try:
+        presence = charger_presence()
+        if presence:
+            summary.append(f"Cahier de présence: {len(presence)} pointages")
+    except:
+        pass
+    try:
+        enquete = charger_enquete()
+        if enquete:
+            score = round(sum(e["score_moyen"] for e in enquete) / len(enquete), 1)
+            summary.append(f"Satisfaction: {len(enquete)} enquêtes, score {score}/5")
+    except:
+        pass
+    try:
+        stock_asc = charger_stock_asc()
+        if stock_asc:
+            summary.append(f"Stock ASC: {len(stock_asc)} ASC suivis")
+    except:
+        pass
+    try:
+        deces = charger_deces()
+        if deces:
+            summary.append(f"Décès maternels: {len(deces)} notifications")
+    except:
+        pass
+    return "\n".join(summary) if summary else "Aucun enregistrement."
+
+
+def get_chatbot_response(user_message, chat_history):
+    api_key = os.environ.get("GROQ_API_KEY", "")
+    if not api_key:
+        return "Clé API Groq non configurée."
+
+    system_prompt = f"""Tu es l'assistant ESPC du CSR NAGNENEFOUN. Tu aides avec:
+1. La grille d'évaluation ESPC (1600 points)
+2. Le choix et la génération de documents
+3. Les questions sur les normes et critères
+4. La consultation des données enregistrées
+
+{get_espc_knowledge()}
+
+{get_templates_knowledge()}
+
+ENREGISTREMENTS:
+{get_saved_data_summary()}
+
+RÈGLES:
+1. Français, précis, concis
+2. Quand on demande un document, identifie le type exact et les paramètres nécessaires
+3. Cite les normes ESPC pertinentes
+4. Pour la génération, fournis le document complet en markdown prêt à convertir en Word
+5. Pour les données, utilise les enregistrements disponibles
+6. Si l'utilisateur demande un document, génère-le directement en markdown avec en-tête officiel"""
+
+    try:
+        client = Groq(api_key=api_key)
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in chat_history[-10:]:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": user_message})
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.3,
+            max_tokens=2000,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Erreur: {str(e)}"
+
+
+def page_chatbot():
+    st.title("💬 Assistant ESPC")
+    st.caption(
+        "Questions sur la grille ESPC, choix de documents, consultation des données"
+    )
+    st.divider()
+
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = []
+    if "chat_doc_counter" not in st.session_state:
+        st.session_state.chat_doc_counter = 0
+
+    for i, msg in enumerate(st.session_state.chat_messages):
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+            if msg.get("is_doc"):
+                doc_name = msg.get("doc_name", "Document_ESPC")
+                doc_content = msg.get("doc_content", msg["content"])
+                doc = creer_document_word(doc_name.replace("_", " "), doc_content)
+                from io import BytesIO
+
+                buf = BytesIO()
+                doc.save(buf)
+                buf.seek(0)
+                st.download_button(
+                    f"📥 Télécharger {doc_name.replace('_', ' ')} (.docx)",
+                    buf,
+                    f"{doc_name}.docx",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key=f"chat_dl_{i}",
+                )
+
+    if prompt := st.chat_input("Posez votre question sur l'ESPC..."):
+        st.session_state.chat_messages.append({"role": "user", "content": prompt})
+
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Réflexion..."):
+                response = get_chatbot_response(prompt, st.session_state.chat_messages)
+            st.markdown(response)
+
+            is_doc = False
+            doc_name = None
+            doc_content = response
+
+            doc_keywords = {
+                "pv réunion mensuelle": "PV_Réunion_Mensuelle",
+                "pv réunion coges": "PV_Réunion_COGES",
+                "pv assemblée": "PV_Assemblée_Générale",
+                "rapport supervision": "Rapport_Supervision_ASC",
+                "rapport plaintes": "Rapport_Plaintes",
+                "fiche de poste": "Fiche_de_Poste",
+                "fiche de nomination": "Fiche_de_Nomination",
+                "calendrier nettoyage": "Calendrier_Nettoyage",
+                "plan action infections": "Plan_Action_Infections",
+                "rapport formation": "Rapport_Formation",
+                "note de service": "Note_de_Service",
+                "liste personnel": "Liste_Personnel",
+                "liste coges": "Liste_COGES",
+                "grille supervision": "Grille_Supervision_ASC",
+                "plan supervision": "Plan_Supervision_ASC",
+            }
+
+            for key, name in doc_keywords.items():
+                if key in prompt.lower():
+                    is_doc = True
+                    doc_name = name
+                    break
+
+            if not is_doc:
+                doc_markers = [
+                    "| N°",
+                    "## I.",
+                    "RÉPUBLIQUE DE CÔTE",
+                    "MINISTÈRE",
+                    "ARTICLE",
+                    "Le Chef du",
+                    "Le Médecin Chef",
+                ]
+                for marker in doc_markers:
+                    if marker in response:
+                        is_doc = True
+                        doc_name = f"Document_ESPC_{st.session_state.chat_doc_counter}"
+                        st.session_state.chat_doc_counter += 1
+                        break
+
+            if is_doc and doc_name:
+                st.info(f"Document généré: **{doc_name.replace('_', ' ')}**")
+                doc = creer_document_word(doc_name.replace("_", " "), doc_content)
+                from io import BytesIO
+
+                buf = BytesIO()
+                doc.save(buf)
+                buf.seek(0)
+                st.download_button(
+                    f"📥 Télécharger {doc_name.replace('_', ' ')} (.docx)",
+                    buf,
+                    f"{doc_name}.docx",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key="chat_dl_new",
+                )
+
+        st.session_state.chat_messages.append(
+            {
+                "role": "assistant",
+                "content": response,
+                "is_doc": is_doc,
+                "doc_name": doc_name,
+                "doc_content": doc_content if is_doc else None,
+            }
+        )
+
+
+# =============================================================================
+# SIDEBAR CHAT WIDGET (accessible depuis toutes les pages)
+# =============================================================================
+
+
+def sidebar_chat_widget():
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown("### 💬 Assistant ESPC")
+
+        if "sidebar_chat_history" not in st.session_state:
+            st.session_state.sidebar_chat_history = []
+
+        for msg in st.session_state.sidebar_chat_history[-2:]:
+            role = "Vous" if msg["role"] == "user" else "Assistant"
+            st.caption(f"**{role}:** {msg['content'][:80]}...")
+
+        with st.form("sidebar_chat_form", clear_on_submit=True):
+            user_msg = st.text_input("Question rapide...", key="sidebar_chat_input")
+            submitted = st.form_submit_button("Envoyer", use_container_width=True)
+
+            if submitted and user_msg:
+                st.session_state.sidebar_chat_history.append(
+                    {"role": "user", "content": user_msg}
+                )
+                with st.spinner("..."):
+                    response = get_chatbot_response(
+                        user_msg, st.session_state.sidebar_chat_history
+                    )
+                st.session_state.sidebar_chat_history.append(
+                    {"role": "assistant", "content": response}
+                )
+                st.rerun()
+
+        if st.button("💬 Ouvrir l'assistant complet", use_container_width=True):
+            st.session_state["open_chatbot"] = True
+
 
 if __name__ == "__main__":
     main()
